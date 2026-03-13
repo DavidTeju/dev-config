@@ -1,0 +1,49 @@
+{
+	"name": "@davidteju/dev-config",
+	"version": "1.0.0",
+	"description": "Shared ESLint, Prettier, TypeScript, and tooling configs for DavidTeju projects",
+	"type": "module",
+	"exports": {
+		"./eslint/base": "./eslint/base.mjs",
+		"./eslint/svelte": "./eslint/svelte.mjs",
+		"./eslint/nextjs": "./eslint/nextjs.mjs",
+		"./prettier/svelte": "./prettier/svelte.mjs",
+		"./prettier/nextjs": "./prettier/nextjs.mjs",
+		"./tsconfig/svelte": "./tsconfig/svelte.json",
+		"./tsconfig/nextjs": "./tsconfig/nextjs.json",
+		"./vitest/nextjs": "./vitest/nextjs.mjs",
+		"./lint-staged/svelte": "./lint-staged/svelte.mjs",
+		"./lint-staged/nextjs": "./lint-staged/nextjs.mjs"
+	},
+	"peerDependencies": {
+		"@eslint/js": ">=10.0.0",
+		"eslint": ">=9.0.0",
+		"eslint-config-prettier": ">=10.0.0",
+		"eslint-plugin-prettier": ">=5.0.0",
+		"globals": ">=15.0.0",
+		"prettier": ">=3.0.0",
+		"typescript": ">=5.0.0",
+		"typescript-eslint": ">=8.0.0",
+		"eslint-plugin-svelte": ">=3.0.0",
+		"prettier-plugin-svelte": ">=3.0.0",
+		"prettier-plugin-tailwindcss": ">=0.5.0",
+		"eslint-config-next": ">=14.0.0",
+		"@vitejs/plugin-react": ">=4.0.0",
+		"vitest": ">=1.0.0",
+		"@vitest/eslint-plugin": ">=1.0.0"
+	},
+	"peerDependenciesMeta": {
+		"eslint-plugin-svelte": { "optional": true },
+		"prettier-plugin-svelte": { "optional": true },
+		"prettier-plugin-tailwindcss": { "optional": true },
+		"eslint-config-next": { "optional": true },
+		"@vitejs/plugin-react": { "optional": true },
+		"vitest": { "optional": true },
+		"@vitest/eslint-plugin": { "optional": true }
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/DavidTeju/dev-config.git"
+	},
+	"license": "MIT"
+}
