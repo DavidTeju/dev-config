@@ -15,4 +15,4 @@
  *     globalIgnores(['.next/**', 'out/**', 'build/**', 'next-env.d.ts']),
  *   ]);
  */
-export { strictRules, testFileOverrides, scriptFileOverrides } from './base.mjs';
+export { strictRules, testFileOverrides, scriptFileOverrides, vitestTestOverrides } from './base.mjs';

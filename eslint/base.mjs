@@ -68,17 +68,46 @@ export const testFileOverrides = {
 	files: ['**/__tests__/**/*.{ts,tsx}', '**/*.{test,spec}.{ts,tsx}', '**/benchmark/**/*.{ts,tsx}'],
 	rules: {
 		'@typescript-eslint/no-non-null-assertion': 'off',
-		'no-restricted-syntax': 'off',
+		'no-restricted-syntax': 'off', // Tests need Date for fixtures and fake timers
 		'@typescript-eslint/no-explicit-any': 'off',
 		'@typescript-eslint/consistent-type-assertions': 'off',
+		// Relax type safety rules for tests (mocks often require any and type casts)
 		'@typescript-eslint/no-unsafe-assignment': 'off',
 		'@typescript-eslint/no-unsafe-call': 'off',
 		'@typescript-eslint/no-unsafe-member-access': 'off',
 		'@typescript-eslint/no-unsafe-return': 'off',
 		'@typescript-eslint/no-unsafe-argument': 'off',
-		'no-console': 'off'
+		'no-console': 'off' // Allow console in tests for debugging
 	}
 };
+
+/**
+ * Vitest-specific test overrides.
+ * Requires @vitest/eslint-plugin as a peer dependency.
+ * Use alongside testFileOverrides for projects that use vitest.
+ */
+export let vitestTestOverrides = {};
+try {
+	const vitestPlugin = await import('@vitest/eslint-plugin');
+	vitestTestOverrides = {
+		files: [
+			'**/__tests__/**/*.{ts,tsx}',
+			'**/*.{test,spec}.{ts,tsx}',
+			'**/benchmark/**/*.{ts,tsx}'
+		],
+		plugins: {
+			vitest: vitestPlugin.default
+		},
+		rules: {
+			// Ban if statements inside test bodies — they create "zombie tests" that
+			// silently pass without verifying anything. Use explicit assertions instead.
+			'vitest/no-conditional-in-test': 'error',
+			'vitest/no-conditional-expect': 'error'
+		}
+	};
+} catch {
+	// @vitest/eslint-plugin not installed — skip vitest rules
+}
 
 /**
  * Relaxed overrides for CLI scripts and tooling files.
@@ -87,7 +116,7 @@ export const scriptFileOverrides = {
 	files: ['scripts/**/*.ts'],
 	rules: {
 		'no-console': 'off',
-		'no-restricted-syntax': 'off',
+		'no-restricted-syntax': 'off', // Scripts can use raw Date, etc.
 		'@typescript-eslint/no-non-null-assertion': 'off',
 		'no-nested-ternary': 'off',
 		complexity: 'off'
