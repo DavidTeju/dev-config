@@ -1,7 +1,7 @@
 import svelte from 'eslint-plugin-svelte';
 import globals from 'globals';
 import ts from 'typescript-eslint';
-import { baseConfig, strictRules, testFileOverrides, scriptFileOverrides } from './base.mjs';
+import { baseConfig, strictRules, testFileOverrides, vitestTestOverrides, scriptFileOverrides } from './base.mjs';
 
 /**
  * Complete ESLint config for SvelteKit projects.
@@ -35,6 +35,7 @@ export function svelteConfig({ svelteConfig: svelteConf } = {}) {
 		},
 		strictRules,
 		testFileOverrides,
+		vitestTestOverrides,
 		scriptFileOverrides,
 		{
 			ignores: ['.svelte-kit/**', 'build/**', 'node_modules/**']

@@ -7,11 +7,11 @@
  *   import { defineConfig, globalIgnores } from 'eslint/config';
  *   import nextVitals from 'eslint-config-next/core-web-vitals';
  *   import nextTs from 'eslint-config-next/typescript';
- *   import { strictRules, testFileOverrides, scriptFileOverrides } from '@davidteju/dev-config/eslint/nextjs';
+ *   import { strictRules, testFileOverrides, vitestTestOverrides, scriptFileOverrides } from '@davidteju/dev-config/eslint/nextjs';
  *
  *   export default defineConfig([
  *     ...nextVitals, ...nextTs,
- *     strictRules, testFileOverrides, scriptFileOverrides,
+ *     strictRules, testFileOverrides, vitestTestOverrides, scriptFileOverrides,
  *     globalIgnores(['.next/**', 'out/**', 'build/**', 'next-env.d.ts']),
  *   ]);
  */

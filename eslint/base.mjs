@@ -60,12 +60,19 @@ export const strictRules = {
 	}
 };
 
+/** Glob patterns that identify test and benchmark files. */
+export const testFilePatterns = [
+	'**/__tests__/**/*.{ts,tsx}',
+	'**/*.{test,spec}.{ts,tsx}',
+	'**/benchmark/**/*.{ts,tsx}'
+];
+
 /**
  * Relaxed overrides for test and benchmark files.
  * Disables strict type rules that conflict with mocking/fixtures.
  */
 export const testFileOverrides = {
-	files: ['**/__tests__/**/*.{ts,tsx}', '**/*.{test,spec}.{ts,tsx}', '**/benchmark/**/*.{ts,tsx}'],
+	files: testFilePatterns,
 	rules: {
 		'@typescript-eslint/no-non-null-assertion': 'off',
 		'no-restricted-syntax': 'off', // Tests need Date for fixtures and fake timers
@@ -86,28 +93,26 @@ export const testFileOverrides = {
  * Requires @vitest/eslint-plugin as a peer dependency.
  * Use alongside testFileOverrides for projects that use vitest.
  */
-export let vitestTestOverrides = {};
-try {
-	const vitestPlugin = await import('@vitest/eslint-plugin');
-	vitestTestOverrides = {
-		files: [
-			'**/__tests__/**/*.{ts,tsx}',
-			'**/*.{test,spec}.{ts,tsx}',
-			'**/benchmark/**/*.{ts,tsx}'
-		],
-		plugins: {
-			vitest: vitestPlugin.default
-		},
-		rules: {
-			// Ban if statements inside test bodies — they create "zombie tests" that
-			// silently pass without verifying anything. Use explicit assertions instead.
-			'vitest/no-conditional-in-test': 'error',
-			'vitest/no-conditional-expect': 'error'
-		}
-	};
-} catch {
-	// @vitest/eslint-plugin not installed — skip vitest rules
-}
+export const vitestTestOverrides = await (async () => {
+	try {
+		const vitestPlugin = await import('@vitest/eslint-plugin');
+		return {
+			files: testFilePatterns,
+			plugins: {
+				vitest: vitestPlugin.default
+			},
+			rules: {
+				// Ban if statements inside test bodies — they create "zombie tests" that
+				// silently pass without verifying anything. Use explicit assertions instead.
+				'vitest/no-conditional-in-test': 'error',
+				'vitest/no-conditional-expect': 'error'
+			}
+		};
+	} catch {
+		// @vitest/eslint-plugin not installed — skip vitest rules
+		return {};
+	}
+})();
 
 /**
  * Relaxed overrides for CLI scripts and tooling files.
