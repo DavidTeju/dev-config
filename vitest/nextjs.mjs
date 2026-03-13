@@ -18,9 +18,7 @@ export function createVitestConfig({ rootDir, setupFiles = [], env = {} }) {
 			globals: true,
 			setupFiles,
 			include: ['src/**/*.{test,spec}.{ts,tsx}'],
-			env: {
-				...env
-			},
+			env,
 			coverage: {
 				provider: 'v8',
 				reporter: ['text', 'json', 'html'],
@@ -29,7 +27,7 @@ export function createVitestConfig({ rootDir, setupFiles = [], env = {} }) {
 		},
 		resolve: {
 			alias: {
-				'@': path.resolve(rootDir, './src')
+				'@': path.resolve(rootDir, 'src')
 			}
 		}
 	};
