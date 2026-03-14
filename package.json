@@ -13,7 +13,10 @@
 		"./tsconfig/nextjs": "./tsconfig/nextjs.json",
 		"./vitest/nextjs": "./vitest/nextjs.mjs",
 		"./lint-staged/svelte": "./lint-staged/svelte.mjs",
-		"./lint-staged/nextjs": "./lint-staged/nextjs.mjs"
+		"./lint-staged/nextjs": "./lint-staged/nextjs.mjs",
+		"./knip/base": "./knip/base.mjs",
+		"./knip/svelte": "./knip/svelte.mjs",
+		"./knip/nextjs": "./knip/nextjs.mjs"
 	},
 	"dependencies": {
 		"@eslint/js": "^10.0.0",
@@ -26,6 +29,7 @@
 		"eslint-plugin-sonarjs": "^4.0.0",
 		"eslint-plugin-svelte": "^3.0.0",
 		"globals": "^15.0.0",
+		"knip": "^5.0.0",
 		"typescript-eslint": "^8.0.0"
 	},
 	"peerDependencies": {
