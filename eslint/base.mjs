@@ -2,12 +2,22 @@ import js from '@eslint/js';
 import ts from 'typescript-eslint';
 import prettierConfig from 'eslint-config-prettier';
 import prettierPlugin from 'eslint-plugin-prettier';
+import sonarjs from 'eslint-plugin-sonarjs';
+import importX from 'eslint-plugin-import-x';
+import { createTypeScriptImportResolver } from 'eslint-import-resolver-typescript';
 
 /**
  * Base ESLint configs: JS recommended + TS recommended + Prettier compat.
  * Use as spread in ts.config() or defineConfig().
  */
-export const baseConfig = [js.configs.recommended, ...ts.configs.recommended, prettierConfig];
+export const baseConfig = [
+	js.configs.recommended,
+	...ts.configs.recommended,
+	sonarjs.configs.recommended,
+	importX.flatConfigs.recommended,
+	importX.flatConfigs.typescript,
+	prettierConfig
+];
 
 /**
  * Strict rules shared across all projects.
@@ -17,8 +27,28 @@ export const strictRules = {
 	plugins: {
 		prettier: prettierPlugin
 	},
+	settings: {
+		'import-x/resolver-next': [createTypeScriptImportResolver()]
+	},
 	rules: {
 		'prettier/prettier': 'error',
+
+		// Import hygiene
+		'import-x/no-cycle': ['error', { maxDepth: 5 }],
+		'import-x/no-self-import': 'error',
+		'import-x/no-useless-path-segments': 'error',
+		'import-x/order': [
+			'error',
+			{
+				groups: ['builtin', 'external', 'internal', 'parent', 'sibling', 'index'],
+				'newlines-between': 'never',
+				alphabetize: { order: 'asc', caseInsensitive: true }
+			}
+		],
+
+		// SonarJS tuning (recommended rules are already on via baseConfig)
+		'sonarjs/cognitive-complexity': ['warn', 15],
+		'sonarjs/no-duplicate-string': ['warn', { threshold: 4 }],
 
 		// TypeScript strictness
 		'@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
@@ -96,7 +126,12 @@ export const testFileOverrides = {
 		'@typescript-eslint/no-unsafe-return': 'off',
 		'@typescript-eslint/no-unsafe-argument': 'off',
 		'no-console': 'off', // Allow console in tests for debugging
-		'no-magic-numbers': 'off'
+		'no-magic-numbers': 'off',
+		// Tests legitimately have duplicate strings (assertions), high complexity (setup), etc.
+		'sonarjs/no-duplicate-string': 'off',
+		'sonarjs/cognitive-complexity': 'off',
+		'sonarjs/no-nested-functions': 'off',
+		'import-x/no-cycle': 'off'
 	}
 };
 
@@ -137,6 +172,9 @@ export const scriptFileOverrides = {
 		'@typescript-eslint/no-non-null-assertion': 'off',
 		'no-nested-ternary': 'off',
 		complexity: 'off',
-		'no-magic-numbers': 'off'
+		'no-magic-numbers': 'off',
+		'sonarjs/no-duplicate-string': 'off',
+		'sonarjs/cognitive-complexity': 'off',
+		'import-x/no-cycle': 'off'
 	}
 };
