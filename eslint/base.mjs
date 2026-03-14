@@ -197,12 +197,12 @@ export const testFileOverrides = {
 export const typeCheckedTestOverrides = {
 	files: testFilePatterns,
 	rules: {
-		'@typescript-eslint/no-floating-promises': 'off',
-		'@typescript-eslint/no-misused-promises': 'off',
+		// Keep no-floating-promises ON — unawaited promises in tests cause silent passes
+		// Keep no-misused-promises ON — same category of silent test failures
+		// Keep no-deprecated ON — tests should migrate off deprecated APIs too
 		'@typescript-eslint/no-unnecessary-condition': 'off',
 		'@typescript-eslint/no-unnecessary-type-assertion': 'off',
 		'@typescript-eslint/switch-exhaustiveness-check': 'off',
-		'@typescript-eslint/no-deprecated': 'off',
 		'@typescript-eslint/prefer-nullish-coalescing': 'off',
 		'@typescript-eslint/prefer-optional-chain': 'off'
 	}
