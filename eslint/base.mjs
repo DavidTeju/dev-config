@@ -2,6 +2,7 @@ import js from '@eslint/js';
 import ts from 'typescript-eslint';
 import prettierConfig from 'eslint-config-prettier';
 import prettierPlugin from 'eslint-plugin-prettier';
+import regexp from 'eslint-plugin-regexp';
 import sonarjs from 'eslint-plugin-sonarjs';
 import importX from 'eslint-plugin-import-x';
 import { createTypeScriptImportResolver } from 'eslint-import-resolver-typescript';
@@ -13,6 +14,22 @@ import { createTypeScriptImportResolver } from 'eslint-import-resolver-typescrip
 export const baseConfig = [
 	js.configs.recommended,
 	...ts.configs.recommended,
+	regexp.configs['flat/recommended'],
+	sonarjs.configs.recommended,
+	importX.flatConfigs.recommended,
+	importX.flatConfigs.typescript,
+	prettierConfig
+];
+
+/**
+ * Type-checked base config: adds type-aware TS rules on top of baseConfig.
+ * Requires parserOptions.projectService to be set by the consumer.
+ * Use as spread in ts.config() or defineConfig().
+ */
+export const typeCheckedBaseConfig = [
+	js.configs.recommended,
+	...ts.configs.recommendedTypeChecked,
+	regexp.configs['flat/recommended'],
 	sonarjs.configs.recommended,
 	importX.flatConfigs.recommended,
 	importX.flatConfigs.typescript,
@@ -101,6 +118,44 @@ export const strictRules = {
 	}
 };
 
+/**
+ * Parser options for type-checked linting.
+ * Add this as a languageOptions config object when using typeCheckedBaseConfig.
+ */
+export const typeCheckedParserOptions = {
+	languageOptions: {
+		parserOptions: {
+			projectService: true
+		}
+	}
+};
+
+/**
+ * Additional strict rules that require type information.
+ * Only usable with typeCheckedBaseConfig + typeCheckedParserOptions.
+ */
+export const typeCheckedRules = {
+	rules: {
+		// Catch unhandled promises — a common source of silent failures
+		'@typescript-eslint/no-floating-promises': 'error',
+		'@typescript-eslint/no-misused-promises': 'error',
+
+		// Catch always-true/false conditions and redundant code
+		'@typescript-eslint/no-unnecessary-condition': 'warn',
+		'@typescript-eslint/no-unnecessary-type-assertion': 'error',
+
+		// Ensure switch statements handle all union members
+		'@typescript-eslint/switch-exhaustiveness-check': 'error',
+
+		// Flag deprecated APIs
+		'@typescript-eslint/no-deprecated': 'warn',
+
+		// Prefer modern operators where type-safe
+		'@typescript-eslint/prefer-nullish-coalescing': 'warn',
+		'@typescript-eslint/prefer-optional-chain': 'warn'
+	}
+};
+
 /** Glob patterns that identify test and benchmark files. */
 export const testFilePatterns = [
 	'**/__tests__/**/*.{ts,tsx}',
@@ -132,6 +187,24 @@ export const testFileOverrides = {
 		'sonarjs/cognitive-complexity': 'off',
 		'sonarjs/no-nested-functions': 'off',
 		'import-x/no-cycle': 'off'
+	}
+};
+
+/**
+ * Relaxed overrides for type-checked rules in test files.
+ * Use alongside testFileOverrides when using typeCheckedBaseConfig.
+ */
+export const typeCheckedTestOverrides = {
+	files: testFilePatterns,
+	rules: {
+		'@typescript-eslint/no-floating-promises': 'off',
+		'@typescript-eslint/no-misused-promises': 'off',
+		'@typescript-eslint/no-unnecessary-condition': 'off',
+		'@typescript-eslint/no-unnecessary-type-assertion': 'off',
+		'@typescript-eslint/switch-exhaustiveness-check': 'off',
+		'@typescript-eslint/no-deprecated': 'off',
+		'@typescript-eslint/prefer-nullish-coalescing': 'off',
+		'@typescript-eslint/prefer-optional-chain': 'off'
 	}
 };
 
