@@ -4,9 +4,7 @@
 	"description": "Shared ESLint, Prettier, TypeScript, and tooling configs for DavidTeju projects",
 	"type": "module",
 	"exports": {
-		"./eslint/base": "./eslint/base.mjs",
-		"./eslint/svelte": "./eslint/svelte.mjs",
-		"./eslint/nextjs": "./eslint/nextjs.mjs",
+		"./eslint": "./eslint/config.mjs",
 		"./prettier/svelte": "./prettier/svelte.mjs",
 		"./prettier/nextjs": "./prettier/nextjs.mjs",
 		"./tsconfig/svelte": "./tsconfig/svelte.json",
@@ -24,11 +22,14 @@
 		"eslint-config-prettier": "^10.0.0",
 		"eslint-import-resolver-typescript": "^4.0.0",
 		"eslint-plugin-import-x": "^4.0.0",
+		"eslint-plugin-jsdoc": "^62.0.0",
+		"eslint-plugin-n": "^17.0.0",
+		"eslint-plugin-no-only-tests": "^3.0.0",
 		"eslint-plugin-prettier": "^5.0.0",
 		"eslint-plugin-regexp": "^3.0.0",
 		"eslint-plugin-sonarjs": "^4.0.0",
-		"eslint-plugin-svelte": "^3.0.0",
-		"globals": "^15.0.0",
+		"eslint-plugin-unused-imports": "^4.0.0",
+		"globals": "^17.0.0",
 		"knip": "^5.0.0",
 		"typescript-eslint": "^8.0.0"
 	},
@@ -39,6 +40,7 @@
 		"prettier-plugin-svelte": ">=3.0.0",
 		"prettier-plugin-tailwindcss": ">=0.5.0",
 		"eslint-config-next": ">=14.0.0",
+		"eslint-plugin-svelte": ">=3.0.0",
 		"vitest": ">=1.0.0",
 		"@vitest/eslint-plugin": ">=1.0.0"
 	},
@@ -46,6 +48,7 @@
 		"prettier-plugin-svelte": { "optional": true },
 		"prettier-plugin-tailwindcss": { "optional": true },
 		"eslint-config-next": { "optional": true },
+		"eslint-plugin-svelte": { "optional": true },
 		"vitest": { "optional": true },
 		"@vitest/eslint-plugin": { "optional": true }
 	},
