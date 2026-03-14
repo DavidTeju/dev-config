@@ -56,6 +56,17 @@ export const strictRules = {
 				message:
 					'Avoid `as unknown as X` double cast. Use proper type guards or fix underlying types instead.'
 			}
+		],
+
+		// No magic numbers — force named constants for clarity
+		'no-magic-numbers': [
+			'error',
+			{
+				detectObjects: false,
+				enforceConst: true,
+				ignore: [0, 1, -1, 2],
+				ignoreArrayIndexes: true
+			}
 		]
 	}
 };
@@ -84,7 +95,8 @@ export const testFileOverrides = {
 		'@typescript-eslint/no-unsafe-member-access': 'off',
 		'@typescript-eslint/no-unsafe-return': 'off',
 		'@typescript-eslint/no-unsafe-argument': 'off',
-		'no-console': 'off' // Allow console in tests for debugging
+		'no-console': 'off', // Allow console in tests for debugging
+		'no-magic-numbers': 'off'
 	}
 };
 
@@ -124,6 +136,7 @@ export const scriptFileOverrides = {
 		'no-restricted-syntax': 'off', // Scripts can use raw Date, etc.
 		'@typescript-eslint/no-non-null-assertion': 'off',
 		'no-nested-ternary': 'off',
-		complexity: 'off'
+		complexity: 'off',
+		'no-magic-numbers': 'off'
 	}
 };
