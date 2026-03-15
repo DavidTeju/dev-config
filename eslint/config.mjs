@@ -106,13 +106,18 @@ export async function createConfig(options = {}) {
 		importX.flatConfigs.typescript,
 		jsdoc.configs['flat/recommended-typescript'],
 		n.configs['flat/recommended'],
-		// Turn off n rules that duplicate import-x
+		// Tune n plugin for our stack
 		{
+			settings: {
+				node: { version: '>=24.0.0' }
+			},
 			rules: {
+				// Redundant with import-x/no-unresolved + TypeScript resolver
 				'n/no-missing-import': 'off',
 				'n/no-missing-require': 'off',
-				'n/no-unpublished-import': 'off',
-				'n/no-unpublished-require': 'off'
+				// Full-stack projects serve browser code; browser globals (localStorage,
+				// fetch, crypto) are not Node builtins and will always false-positive.
+				'n/no-unsupported-features/node-builtins': 'off'
 			}
 		},
 		prettierConfig
