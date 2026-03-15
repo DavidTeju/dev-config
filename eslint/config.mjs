@@ -5,15 +5,7 @@ import prettierPlugin from 'eslint-plugin-prettier';
 import regexp from 'eslint-plugin-regexp';
 import sonarjs from 'eslint-plugin-sonarjs';
 import importX from 'eslint-plugin-import-x';
-import {
-	createTypeScriptImportResolver,
-	defaultConditionNames
-} from 'eslint-import-resolver-typescript';
-
-// Deprioritize 'types' so the resolver compares by runtime module identity,
-// not .d.ts location. Fixes import-x/no-duplicates false positives when
-// packages (e.g. Svelte 5) map multiple subpath exports to one types/index.d.ts.
-const resolverConditionNames = [...defaultConditionNames.filter((c) => c !== 'types'), 'types'];
+import { createTypeScriptImportResolver } from 'eslint-import-resolver-typescript';
 import unusedImports from 'eslint-plugin-unused-imports';
 import noOnlyTests from 'eslint-plugin-no-only-tests';
 import jsdoc from 'eslint-plugin-jsdoc';
@@ -172,9 +164,7 @@ export async function createConfig(options = {}) {
 			'unused-imports': unusedImports
 		},
 		settings: {
-			'import-x/resolver-next': [
-				createTypeScriptImportResolver({ conditionNames: resolverConditionNames })
-			]
+			'import-x/resolver-next': [createTypeScriptImportResolver()]
 		},
 		rules: {
 			'prettier/prettier': 'error',
