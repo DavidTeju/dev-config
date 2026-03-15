@@ -8,7 +8,6 @@ import importX from 'eslint-plugin-import-x';
 import { createTypeScriptImportResolver } from 'eslint-import-resolver-typescript';
 import unusedImports from 'eslint-plugin-unused-imports';
 import noOnlyTests from 'eslint-plugin-no-only-tests';
-import jsdoc from 'eslint-plugin-jsdoc';
 import n from 'eslint-plugin-n';
 import globals from 'globals';
 
@@ -96,7 +95,6 @@ export async function createConfig(options = {}) {
 		sonarjs.configs.recommended,
 		importX.flatConfigs.recommended,
 		importX.flatConfigs.typescript,
-		jsdoc.configs['flat/recommended-typescript'],
 		n.configs['flat/recommended'],
 		// Tune n plugin for our stack
 		{
