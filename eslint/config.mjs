@@ -304,7 +304,8 @@ export async function createConfig(options = {}) {
 			rules: {
 				'vitest/expect-expect': 'error',
 				'vitest/no-conditional-in-test': 'error',
-				'vitest/no-conditional-expect': 'error'
+				'vitest/no-conditional-expect': 'error',
+				'vitest/no-disabled-tests': 'error'
 			}
 		});
 	} catch {
