@@ -249,8 +249,11 @@ export async function createConfig(options = {}) {
 				'@typescript-eslint/no-unnecessary-type-assertion': 'error',
 				'@typescript-eslint/switch-exhaustiveness-check': 'error',
 				'@typescript-eslint/no-deprecated': 'warn',
-				'@typescript-eslint/prefer-nullish-coalescing': 'warn',
-				'@typescript-eslint/prefer-optional-chain': 'warn'
+				'@typescript-eslint/prefer-nullish-coalescing': 'error',
+				'@typescript-eslint/prefer-optional-chain': 'warn',
+				'logical-assignment-operators': ['error', 'always', {
+					enforceForIfStatements: true
+				}]
 			}
 		});
 	}
@@ -287,7 +290,6 @@ export async function createConfig(options = {}) {
 				'@typescript-eslint/no-unnecessary-condition': 'off',
 				'@typescript-eslint/no-unnecessary-type-assertion': 'off',
 				'@typescript-eslint/switch-exhaustiveness-check': 'off',
-				'@typescript-eslint/prefer-nullish-coalescing': 'off',
 				'@typescript-eslint/prefer-optional-chain': 'off'
 			}
 		});
