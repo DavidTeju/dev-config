@@ -302,6 +302,7 @@ export async function createConfig(options = {}) {
 				vitest: vitestPlugin.default
 			},
 			rules: {
+				'vitest/expect-expect': 'error',
 				'vitest/no-conditional-in-test': 'error',
 				'vitest/no-conditional-expect': 'error'
 			}
