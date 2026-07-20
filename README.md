@@ -15,13 +15,56 @@ npm install --save-dev github:DavidTeju/dev-config
 | `./eslint/base` | Base ESLint flat config + strict rules + file overrides |
 | `./eslint/svelte` | Pre-composed ESLint config for SvelteKit |
 | `./eslint/nextjs` | ESLint config pieces for Next.js (compose yourself) |
+| `./prettier/base` | Base Prettier config (tabs, single quotes, no framework plugins) |
 | `./prettier/svelte` | Prettier config with svelte + tailwind plugins |
 | `./prettier/nextjs` | Prettier config with tailwind plugin |
+| `./tsconfig/node` | TypeScript config for plain Node/backend services (NodeNext, ESM, strict) |
 | `./tsconfig/svelte` | TypeScript config for SvelteKit |
 | `./tsconfig/nextjs` | TypeScript config for Next.js |
+| `./vitest/node` | Vitest config factory for plain Node/TS services (node env + optional `@` alias) |
 | `./vitest/nextjs` | Vitest config factory for Next.js (jsdom + React + `@` alias) |
+| `./lint-staged/node` | lint-staged config for Node/TS services |
 | `./lint-staged/svelte` | lint-staged config for SvelteKit |
 | `./lint-staged/nextjs` | lint-staged config for Next.js |
+
+## Node / backend services
+
+For plain Node + TypeScript services (no framework), compose the base pieces:
+
+```jsonc
+// tsconfig.json
+{
+  "extends": "@davidteju/dev-config/tsconfig/node",
+  "compilerOptions": { "outDir": "dist", "rootDir": "." },
+  "include": ["src", "bin", "test"]
+}
+```
+
+```js
+// eslint.config.mjs — the base factory is framework-less; omit `framework`.
+import { createConfig } from '@davidteju/dev-config/eslint';
+export default await createConfig({ typeChecked: true });
+```
+
+```js
+// .prettierrc.mjs
+export { default } from '@davidteju/dev-config/prettier/base';
+```
+
+```js
+// vitest.config.mjs
+import { createVitestConfig } from '@davidteju/dev-config/vitest/node';
+export default createVitestConfig({ rootDir: import.meta.dirname });
+```
+
+```js
+// lint-staged.config.mjs
+export { default } from '@davidteju/dev-config/lint-staged/node';
+```
+
+> The `node` tsconfig assumes ESM (`verbatimModuleSyntax`) — set `"type": "module"` in
+> `package.json`. It intentionally omits `outDir`/`rootDir` (paths in an extended base
+> resolve relative to the base file, not your project) so set those in your own tsconfig.
 
 ## ESLint
 

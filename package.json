@@ -5,11 +5,15 @@
 	"type": "module",
 	"exports": {
 		"./eslint": "./eslint/config.mjs",
+		"./prettier/base": "./prettier/base.mjs",
 		"./prettier/svelte": "./prettier/svelte.mjs",
 		"./prettier/nextjs": "./prettier/nextjs.mjs",
+		"./tsconfig/node": "./tsconfig/node.json",
 		"./tsconfig/svelte": "./tsconfig/svelte.json",
 		"./tsconfig/nextjs": "./tsconfig/nextjs.json",
+		"./vitest/node": "./vitest/node.mjs",
 		"./vitest/nextjs": "./vitest/nextjs.mjs",
+		"./lint-staged/node": "./lint-staged/node.mjs",
 		"./lint-staged/svelte": "./lint-staged/svelte.mjs",
 		"./lint-staged/nextjs": "./lint-staged/nextjs.mjs",
 		"./knip/base": "./knip/base.mjs",
@@ -41,7 +45,8 @@
 		"eslint-config-next": ">=14.0.0",
 		"eslint-plugin-svelte": ">=3.0.0",
 		"vitest": ">=1.0.0",
-		"@vitest/eslint-plugin": ">=1.0.0"
+		"@vitest/eslint-plugin": ">=1.0.0",
+		"@vitest/coverage-v8": ">=1.0.0"
 	},
 	"peerDependenciesMeta": {
 		"prettier-plugin-svelte": { "optional": true },
@@ -49,7 +54,8 @@
 		"eslint-config-next": { "optional": true },
 		"eslint-plugin-svelte": { "optional": true },
 		"vitest": { "optional": true },
-		"@vitest/eslint-plugin": { "optional": true }
+		"@vitest/eslint-plugin": { "optional": true },
+		"@vitest/coverage-v8": { "optional": true }
 	},
 	"repository": {
 		"type": "git",

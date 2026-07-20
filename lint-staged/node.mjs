@@ -1,0 +1,4 @@
+export default {
+	'*.ts': ['eslint --fix', 'prettier --write'],
+	'*.{json,md,mjs,yml,yaml}': ['prettier --write']
+};
