@@ -19,6 +19,7 @@ npm install --save-dev github:DavidTeju/dev-config
 | `./prettier/svelte` | Prettier config with svelte + tailwind plugins |
 | `./prettier/nextjs` | Prettier config with tailwind plugin |
 | `./tsconfig/node` | TypeScript config for plain Node/backend services (NodeNext, ESM, strict) |
+| `./tsconfig/node-native` | `node` preset for TypeScript that Node runs directly with type stripping (no build step) |
 | `./tsconfig/svelte` | TypeScript config for SvelteKit |
 | `./tsconfig/nextjs` | TypeScript config for Next.js |
 | `./vitest/node` | Vitest config factory for plain Node/TS services (node env + optional `@` alias) |
@@ -65,6 +66,25 @@ export { default } from '@davidteju/dev-config/lint-staged/node';
 > The `node` tsconfig assumes ESM (`verbatimModuleSyntax`) — set `"type": "module"` in
 > `package.json`. It intentionally omits `outDir`/`rootDir` (paths in an extended base
 > resolve relative to the base file, not your project) so set those in your own tsconfig.
+
+### Running TypeScript directly with Node
+
+For scripts and CLIs that Node runs as `.ts` with its built-in type stripping (Node 23.6+,
+no `tsc` build), extend `node-native` instead. It adds `noEmit`, `allowImportingTsExtensions`
+(so imports name the real `.ts` file) and `erasableSyntaxOnly` (rejects enums, namespaces and
+parameter properties, which type stripping cannot run), and turns off emit-only options.
+`tsc` becomes a type checker only.
+
+```jsonc
+// tsconfig.json
+{
+  "extends": "@davidteju/dev-config/tsconfig/node-native",
+  "include": ["*.ts"]
+}
+```
+
+Keep projects that compile with `tsc` and an `outDir` on `node`:
+`allowImportingTsExtensions` requires `noEmit`.
 
 ## ESLint
 

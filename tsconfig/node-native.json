@@ -1,0 +1,10 @@
+{
+	"extends": "./node.json",
+	"compilerOptions": {
+		"noEmit": true,
+		"allowImportingTsExtensions": true,
+		"erasableSyntaxOnly": true,
+		"declaration": false,
+		"sourceMap": false
+	}
+}
