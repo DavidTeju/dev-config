@@ -43,8 +43,9 @@ For plain Node + TypeScript services (no framework), compose the base pieces:
 
 ```js
 // eslint.config.mjs — the base factory is framework-less; omit `framework`.
+// Type-aware rules are on by default; pass `{ typeChecked: false }` only where type information is unavailable.
 import { createConfig } from '@davidteju/dev-config/eslint';
-export default await createConfig({ typeChecked: true });
+export default await createConfig();
 ```
 
 ```js
@@ -135,13 +136,17 @@ export default defineConfig([
 
 - Prettier as an ESLint rule (`prettier/prettier: error`)
 - TypeScript strictness: no `any`, consistent type imports, no non-null assertions
-- Bans `as any` and `as unknown as X` double casts via AST selectors
+- **No type casts** (`consistent-type-assertions: never`; `as const` is allowed). Narrow with a real check instead: `typeof`, `instanceof`, a type guard, or a zod schema for data from outside.
+- **No `throw`** (`@davidteju/no-throw`). Return a [neverthrow](https://github.com/supermacro/neverthrow) `Result` for a failure the caller can act on; call `panic()` for a bug.
+- **`@davidteju/must-use-result`** reports a neverthrow `Result` that is computed and dropped, like Rust's `#[must_use]`. `void result` discards one on purpose; an unawaited `ResultAsync` is reported by `no-floating-promises`. It does nothing in a project that does not load neverthrow.
+- Both rules need type information, which is on by default (`typeChecked: true`). With `typeChecked: false` the throw ban is off too, because a dropped Result could not be caught.
+- **Escape hatches, one file each**, so every use is greppable: a file named `unchecked.ts` may cast, and a file named `panic.ts` may throw. Projects put `unchecked<T>()` and `panic()` helpers there.
 - Code quality: complexity cap (15), no nested ternaries, no param reassignment
 - Security: no `eval` / `implied-eval`
 
 **`testFileOverrides`** -- relaxes strict rules for test files (`**/*.{test,spec}.{ts,tsx}`, `**/__tests__/**`, `**/benchmark/**`):
 
-- Allows `any`, type casts, non-null assertions, `console`, and raw `Date` usage
+- Allows `any`, type casts, `throw`, non-null assertions, `console`, and raw `Date` usage
 
 **`vitestTestOverrides`** -- adds Vitest-specific lint rules (requires `@vitest/eslint-plugin`):
 
@@ -150,7 +155,9 @@ export default defineConfig([
 
 Gracefully degrades to a no-op `{}` if `@vitest/eslint-plugin` is not installed.
 
-**`scriptFileOverrides`** -- relaxes rules for `scripts/**/*.ts` (CLI tooling, build scripts).
+**`scriptFileOverrides`** -- relaxes rules for `scripts/**/*.ts` (CLI tooling, build scripts), including allowing `throw`.
+
+Run `npm test` to check the rules against the fixtures in `test/fixtures/project`.
 
 ## Prettier
 

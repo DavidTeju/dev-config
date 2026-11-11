@@ -10,6 +10,8 @@ import unusedImports from 'eslint-plugin-unused-imports';
 import noOnlyTests from 'eslint-plugin-no-only-tests';
 import n from 'eslint-plugin-n';
 import globals from 'globals';
+import { mustUseResult } from './rules/must-use-result.mjs';
+import { noThrow } from './rules/no-throw.mjs';
 
 /** Glob patterns that identify test and benchmark files. */
 const testFilePatterns = [
@@ -17,6 +19,16 @@ const testFilePatterns = [
 	'**/*.{test,spec}.{ts,tsx}',
 	'**/benchmark/**/*.{ts,tsx}'
 ];
+
+/**
+ * The only files allowed to cast (`unchecked.ts`) or throw (`panic.ts`). Keeping each escape
+ * hatch in one named file makes every use of it greppable, like Rust's `unsafe` and `panic!`.
+ */
+const uncheckedFilePatterns = ['**/unchecked.{ts,tsx}'];
+const panicFilePatterns = ['**/panic.{ts,tsx,js,mjs}'];
+
+/** This package's own rules. */
+const ownPlugin = { rules: { 'must-use-result': mustUseResult, 'no-throw': noThrow } };
 
 /**
  * Build Svelte-specific config objects.
@@ -70,12 +82,13 @@ function buildSvelteConfigs(svelte, svelteConf) {
  *
  * @param {object} [options]
  * @param {'svelte' | 'nextjs'} [options.framework] - Framework-specific config
- * @param {boolean} [options.typeChecked=false] - Enable type-checked rules
+ * @param {boolean} [options.typeChecked=true] - Type-aware rules, including the throw ban and
+ *   must-use-result. Pass false only where type information is unavailable.
  * @param {object} [options.svelteConfig] - Imported svelte.config.js (Svelte only)
  * @returns {Promise<import('typescript-eslint').ConfigArray>}
  */
 export async function createConfig(options = {}) {
-	const { framework, typeChecked = false, svelteConfig: svelteConf } = options;
+	const { framework, typeChecked = true, svelteConfig: svelteConf } = options;
 
 	// --- Validation ---
 	if (svelteConf && framework !== 'svelte') {
@@ -159,7 +172,8 @@ export async function createConfig(options = {}) {
 	config.push({
 		plugins: {
 			prettier: prettierPlugin,
-			'unused-imports': unusedImports
+			'unused-imports': unusedImports,
+			'@davidteju': ownPlugin
 		},
 		settings: {
 			'import-x/resolver-next': [createTypeScriptImportResolver()]
@@ -193,13 +207,8 @@ export async function createConfig(options = {}) {
 			'@typescript-eslint/consistent-type-imports': 'error',
 			'@typescript-eslint/no-non-null-assertion': 'error',
 			'@typescript-eslint/no-explicit-any': 'error',
-			'@typescript-eslint/consistent-type-assertions': [
-				'error',
-				{
-					assertionStyle: 'as',
-					objectLiteralTypeAssertions: 'allow-as-parameter'
-				}
-			],
+			// No casts: narrow with a check instead (`as const` stays allowed)
+			'@typescript-eslint/consistent-type-assertions': ['error', { assertionStyle: 'never' }],
 
 			// Code quality
 			complexity: ['warn', { max: 15 }],
@@ -210,21 +219,6 @@ export async function createConfig(options = {}) {
 			// Security
 			'no-eval': 'error',
 			'no-implied-eval': 'error',
-
-			// Ban unsafe type assertions
-			'no-restricted-syntax': [
-				'error',
-				{
-					selector: 'TSAsExpression[typeAnnotation.type="TSAnyKeyword"]',
-					message:
-						'Avoid `as any` type assertion. Use proper type guards or fix underlying types instead.'
-				},
-				{
-					selector: 'TSAsExpression > TSAsExpression[typeAnnotation.type="TSUnknownKeyword"]',
-					message:
-						'Avoid `as unknown as X` double cast. Use proper type guards or fix underlying types instead.'
-				}
-			],
 
 			// No magic numbers — force named constants for clarity
 			'no-magic-numbers': [
@@ -243,6 +237,9 @@ export async function createConfig(options = {}) {
 	if (typeChecked) {
 		config.push({
 			rules: {
+				// No throw; only enforced where dropped Results are caught too
+				'@davidteju/no-throw': 'error',
+				'@davidteju/must-use-result': 'error',
 				'@typescript-eslint/no-floating-promises': 'error',
 				'@typescript-eslint/no-misused-promises': 'error',
 				'@typescript-eslint/no-unnecessary-condition': 'warn',
@@ -260,12 +257,24 @@ export async function createConfig(options = {}) {
 
 	// === 6. Overrides (always) ===
 
+	// The two escape hatches: unchecked.ts may cast, panic.ts may throw
+	config.push(
+		{
+			files: uncheckedFilePatterns,
+			rules: { '@typescript-eslint/consistent-type-assertions': ['error', { assertionStyle: 'as' }] }
+		},
+		{
+			files: panicFilePatterns,
+			rules: { '@davidteju/no-throw': 'off' }
+		}
+	);
+
 	// Test file overrides — relaxed rules for tests
 	config.push({
 		files: testFilePatterns,
 		rules: {
 			'@typescript-eslint/no-non-null-assertion': 'off',
-			'no-restricted-syntax': 'off',
+			'@davidteju/no-throw': 'off',
 			'@typescript-eslint/no-explicit-any': 'off',
 			'@typescript-eslint/consistent-type-assertions': 'off',
 			'@typescript-eslint/no-unsafe-assignment': 'off',
@@ -330,7 +339,7 @@ export async function createConfig(options = {}) {
 		files: ['scripts/**/*.ts'],
 		rules: {
 			'no-console': 'off',
-			'no-restricted-syntax': 'off',
+			'@davidteju/no-throw': 'off',
 			'@typescript-eslint/no-non-null-assertion': 'off',
 			'no-nested-ternary': 'off',
 			complexity: 'off',

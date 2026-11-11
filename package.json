@@ -1,6 +1,6 @@
 {
 	"name": "@davidteju/dev-config",
-	"version": "1.0.0",
+	"version": "2.0.0",
 	"description": "Shared ESLint, Prettier, TypeScript, and tooling configs for DavidTeju projects",
 	"type": "module",
 	"exports": {
@@ -21,8 +21,13 @@
 		"./knip/svelte": "./knip/svelte.mjs",
 		"./knip/nextjs": "./knip/nextjs.mjs"
 	},
+	"scripts": {
+		"test": "node --test test/*.test.mjs"
+	},
 	"dependencies": {
 		"@eslint/js": "^10.0.0",
+		"@typescript-eslint/type-utils": "^8.0.0",
+		"@typescript-eslint/utils": "^8.0.0",
 		"@vitejs/plugin-react": "^4.0.0",
 		"eslint-config-prettier": "^10.0.0",
 		"eslint-import-resolver-typescript": "^4.0.0",
@@ -47,7 +52,8 @@
 		"eslint-plugin-svelte": ">=3.0.0",
 		"vitest": ">=1.0.0",
 		"@vitest/eslint-plugin": ">=1.0.0",
-		"@vitest/coverage-v8": ">=1.0.0"
+		"@vitest/coverage-v8": ">=1.0.0",
+		"neverthrow": ">=8.0.0 <9.0.0"
 	},
 	"peerDependenciesMeta": {
 		"prettier-plugin-svelte": { "optional": true },
@@ -56,11 +62,15 @@
 		"eslint-plugin-svelte": { "optional": true },
 		"vitest": { "optional": true },
 		"@vitest/eslint-plugin": { "optional": true },
-		"@vitest/coverage-v8": { "optional": true }
+		"@vitest/coverage-v8": { "optional": true },
+		"neverthrow": { "optional": true }
 	},
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/DavidTeju/dev-config.git"
 	},
-	"license": "MIT"
+	"license": "MIT",
+	"devDependencies": {
+		"neverthrow": "8.2.0"
+	}
 }
