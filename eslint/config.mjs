@@ -248,9 +248,13 @@ export async function createConfig(options = {}) {
 				'@typescript-eslint/no-deprecated': 'warn',
 				'@typescript-eslint/prefer-nullish-coalescing': 'error',
 				'@typescript-eslint/prefer-optional-chain': 'warn',
-				'logical-assignment-operators': ['error', 'always', {
-					enforceForIfStatements: true
-				}]
+				'logical-assignment-operators': [
+					'error',
+					'always',
+					{
+						enforceForIfStatements: true
+					}
+				]
 			}
 		});
 	}
@@ -261,7 +265,9 @@ export async function createConfig(options = {}) {
 	config.push(
 		{
 			files: uncheckedFilePatterns,
-			rules: { '@typescript-eslint/consistent-type-assertions': ['error', { assertionStyle: 'as' }] }
+			rules: {
+				'@typescript-eslint/consistent-type-assertions': ['error', { assertionStyle: 'as' }]
+			}
 		},
 		{
 			files: panicFilePatterns,

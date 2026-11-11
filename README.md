@@ -10,23 +10,21 @@ npm install --save-dev github:DavidTeju/dev-config
 
 ## What's included
 
-| Export path | Description |
-| --- | --- |
-| `./eslint/base` | Base ESLint flat config + strict rules + file overrides |
-| `./eslint/svelte` | Pre-composed ESLint config for SvelteKit |
-| `./eslint/nextjs` | ESLint config pieces for Next.js (compose yourself) |
-| `./prettier/base` | Base Prettier config (tabs, single quotes, no framework plugins) |
-| `./prettier/svelte` | Prettier config with svelte + tailwind plugins |
-| `./prettier/nextjs` | Prettier config with tailwind plugin |
-| `./tsconfig/node` | TypeScript config for plain Node/backend services (NodeNext, ESM, strict) |
+| Export path              | Description                                                                              |
+| ------------------------ | ---------------------------------------------------------------------------------------- |
+| `./eslint`               | `createConfig()`: the whole ESLint flat config, for Node, SvelteKit or Next.js           |
+| `./prettier/base`        | Base Prettier config (tabs, single quotes, no framework plugins)                         |
+| `./prettier/svelte`      | Prettier config with svelte + tailwind plugins                                           |
+| `./prettier/nextjs`      | Prettier config with tailwind plugin                                                     |
+| `./tsconfig/node`        | TypeScript config for plain Node/backend services (NodeNext, ESM, strict)                |
 | `./tsconfig/node-native` | `node` preset for TypeScript that Node runs directly with type stripping (no build step) |
-| `./tsconfig/svelte` | TypeScript config for SvelteKit |
-| `./tsconfig/nextjs` | TypeScript config for Next.js |
-| `./vitest/node` | Vitest config factory for plain Node/TS services (node env + optional `@` alias) |
-| `./vitest/nextjs` | Vitest config factory for Next.js (jsdom + React + `@` alias) |
-| `./lint-staged/node` | lint-staged config for Node/TS services |
-| `./lint-staged/svelte` | lint-staged config for SvelteKit |
-| `./lint-staged/nextjs` | lint-staged config for Next.js |
+| `./tsconfig/svelte`      | TypeScript config for SvelteKit                                                          |
+| `./tsconfig/nextjs`      | TypeScript config for Next.js                                                            |
+| `./vitest/node`          | Vitest config factory for plain Node/TS services (node env + optional `@` alias)         |
+| `./vitest/nextjs`        | Vitest config factory for Next.js (jsdom + React + `@` alias)                            |
+| `./lint-staged/node`     | lint-staged config for Node/TS services                                                  |
+| `./lint-staged/svelte`   | lint-staged config for SvelteKit                                                         |
+| `./lint-staged/nextjs`   | lint-staged config for Next.js                                                           |
 
 ## Node / backend services
 
@@ -35,9 +33,9 @@ For plain Node + TypeScript services (no framework), compose the base pieces:
 ```jsonc
 // tsconfig.json
 {
-  "extends": "@davidteju/dev-config/tsconfig/node",
-  "compilerOptions": { "outDir": "dist", "rootDir": "." },
-  "include": ["src", "bin", "test"]
+	"extends": "@davidteju/dev-config/tsconfig/node",
+	"compilerOptions": { "outDir": "dist", "rootDir": "." },
+	"include": ["src", "bin", "test"]
 }
 ```
 
@@ -79,8 +77,8 @@ parameter properties, which type stripping cannot run), and turns off emit-only 
 ```jsonc
 // tsconfig.json
 {
-  "extends": "@davidteju/dev-config/tsconfig/node-native",
-  "include": ["*.ts"]
+	"extends": "@davidteju/dev-config/tsconfig/node-native",
+	"include": ["*.ts"]
 }
 ```
 
@@ -91,48 +89,34 @@ Keep projects that compile with `tsc` and an `outDir` on `node`:
 
 All ESLint configs use the [flat config](https://eslint.org/docs/latest/use/configure/configuration-files) format (ESLint 9+).
 
-### SvelteKit
+`createConfig(options)` returns the whole config array:
 
-`svelteConfig()` returns a complete, ready-to-use config array:
+- `framework`: `'svelte'` or `'nextjs'`; omit it for plain Node.
+- `typeChecked` (default `true`): type-aware rules. Pass `false` only where type information is unavailable.
+- `svelteConfig`: the project's imported `svelte.config.js` (SvelteKit only).
 
 ```js
-// eslint.config.js
-import { svelteConfig } from '@davidteju/dev-config/eslint/svelte';
-import svelteConf from './svelte.config.js';
+// eslint.config.js (SvelteKit)
+import { createConfig } from '@davidteju/dev-config/eslint';
+import svelteConfig from './svelte.config.js';
 
-export default svelteConfig({ svelteConfig: svelteConf });
+export default await createConfig({ framework: 'svelte', svelteConfig });
 ```
 
-### Next.js
-
-Next.js re-exports individual config pieces for you to compose with `eslint-config-next`:
-
 ```js
-// eslint.config.mjs
-import { defineConfig, globalIgnores } from 'eslint/config';
-import nextVitals from 'eslint-config-next/core-web-vitals';
-import nextTs from 'eslint-config-next/typescript';
-import {
-  strictRules,
-  testFileOverrides,
-  vitestTestOverrides,
-  scriptFileOverrides,
-} from '@davidteju/dev-config/eslint/nextjs';
+// eslint.config.mjs (Next.js)
+import { globalIgnores } from 'eslint/config';
+import { createConfig } from '@davidteju/dev-config/eslint';
 
-export default defineConfig([
-  ...nextVitals,
-  ...nextTs,
-  strictRules,
-  testFileOverrides,
-  vitestTestOverrides,
-  scriptFileOverrides,
-  globalIgnores(['.next/**', 'out/**', 'build/**', 'next-env.d.ts']),
-]);
+export default [
+	...(await createConfig({ framework: 'nextjs' })),
+	globalIgnores(['.next/**', 'out/**', 'build/**', 'next-env.d.ts'])
+];
 ```
 
 ### What the ESLint configs enforce
 
-**`strictRules`** -- applied to all source files:
+**All source files:**
 
 - Prettier as an ESLint rule (`prettier/prettier: error`)
 - TypeScript strictness: no `any`, consistent type imports, no non-null assertions
@@ -144,18 +128,16 @@ export default defineConfig([
 - Code quality: complexity cap (15), no nested ternaries, no param reassignment
 - Security: no `eval` / `implied-eval`
 
-**`testFileOverrides`** -- relaxes strict rules for test files (`**/*.{test,spec}.{ts,tsx}`, `**/__tests__/**`, `**/benchmark/**`):
+**Test files** get relaxed rules (`**/*.{test,spec}.{ts,tsx}`, `**/__tests__/**`, `**/benchmark/**`):
 
 - Allows `any`, type casts, `throw`, non-null assertions, `console`, and raw `Date` usage
 
-**`vitestTestOverrides`** -- adds Vitest-specific lint rules (requires `@vitest/eslint-plugin`):
+**Vitest rules** for test files, when `@vitest/eslint-plugin` is installed:
 
 - `vitest/no-conditional-in-test`: bans `if` statements inside test bodies
 - `vitest/no-conditional-expect`: bans conditional `expect()` calls
 
-Gracefully degrades to a no-op `{}` if `@vitest/eslint-plugin` is not installed.
-
-**`scriptFileOverrides`** -- relaxes rules for `scripts/**/*.ts` (CLI tooling, build scripts), including allowing `throw`.
+**Scripts** get relaxed rules in `scripts/**/*.ts` (CLI tooling, build scripts), including allowing `throw`.
 
 Run `npm test` to check the rules against the fixtures in `test/fixtures/project`.
 
@@ -176,19 +158,19 @@ Both configs use tabs, single quotes, 100-char print width, and `prettier-plugin
 ```jsonc
 // tsconfig.json (Next.js)
 {
-  "extends": "@davidteju/dev-config/tsconfig/nextjs",
-  "compilerOptions": {
-    "paths": { "@/*": ["./src/*"] }
-  },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules"]
+	"extends": "@davidteju/dev-config/tsconfig/nextjs",
+	"compilerOptions": {
+		"paths": { "@/*": ["./src/*"] }
+	},
+	"include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+	"exclude": ["node_modules"]
 }
 ```
 
 ```jsonc
 // tsconfig.json (SvelteKit)
 {
-  "extends": "@davidteju/dev-config/tsconfig/svelte"
+	"extends": "@davidteju/dev-config/tsconfig/svelte"
 }
 ```
 
@@ -202,11 +184,11 @@ import { defineConfig } from 'vitest/config';
 import { createVitestConfig } from '@davidteju/dev-config/vitest/nextjs';
 
 export default defineConfig(
-  createVitestConfig({
-    rootDir: import.meta.dirname,
-    setupFiles: ['./src/test/setup.ts'],
-    env: { DATABASE_URL: 'postgres://localhost/test' },
-  })
+	createVitestConfig({
+		rootDir: import.meta.dirname,
+		setupFiles: ['./src/test/setup.ts'],
+		env: { DATABASE_URL: 'postgres://localhost/test' }
+	})
 );
 ```
 
@@ -228,13 +210,15 @@ Required: `eslint`, `prettier`, `typescript`
 
 Optional (install only what your framework needs):
 
-| Peer | Used by |
-| --- | --- |
-| `eslint-config-next` | `eslint/nextjs` |
-| `prettier-plugin-svelte` | `prettier/svelte` |
-| `prettier-plugin-tailwindcss` | `prettier/svelte`, `prettier/nextjs` |
-| `vitest` | `vitest/nextjs` |
-| `@vitest/eslint-plugin` | `vitestTestOverrides` in `eslint/base` |
+| Peer                          | Used by                                                     |
+| ----------------------------- | ----------------------------------------------------------- |
+| `eslint-config-next`          | `createConfig({ framework: 'nextjs' })`                     |
+| `prettier-plugin-svelte`      | `prettier/svelte`                                           |
+| `prettier-plugin-tailwindcss` | `prettier/svelte`, `prettier/nextjs`                        |
+| `vitest`                      | `vitest/nextjs`                                             |
+| `@vitest/eslint-plugin`       | Vitest rules in `createConfig()`                            |
+| `eslint-plugin-svelte`        | `createConfig({ framework: 'svelte' })`                     |
+| `neverthrow`                  | `@davidteju/must-use-result` (projects that return Results) |
 
 ## License
 

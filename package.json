@@ -56,14 +56,30 @@
 		"neverthrow": ">=8.0.0 <9.0.0"
 	},
 	"peerDependenciesMeta": {
-		"prettier-plugin-svelte": { "optional": true },
-		"prettier-plugin-tailwindcss": { "optional": true },
-		"eslint-config-next": { "optional": true },
-		"eslint-plugin-svelte": { "optional": true },
-		"vitest": { "optional": true },
-		"@vitest/eslint-plugin": { "optional": true },
-		"@vitest/coverage-v8": { "optional": true },
-		"neverthrow": { "optional": true }
+		"prettier-plugin-svelte": {
+			"optional": true
+		},
+		"prettier-plugin-tailwindcss": {
+			"optional": true
+		},
+		"eslint-config-next": {
+			"optional": true
+		},
+		"eslint-plugin-svelte": {
+			"optional": true
+		},
+		"vitest": {
+			"optional": true
+		},
+		"@vitest/eslint-plugin": {
+			"optional": true
+		},
+		"@vitest/coverage-v8": {
+			"optional": true
+		},
+		"neverthrow": {
+			"optional": true
+		}
 	},
 	"repository": {
 		"type": "git",

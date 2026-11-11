@@ -9,7 +9,11 @@ import { ESLintUtils } from '@typescript-eslint/utils';
  * Needs type information.
  */
 
-const RESULT = /** @type {const} */ ({ from: 'package', package: 'neverthrow', name: ['Ok', 'Err'] });
+const RESULT = /** @type {const} */ ({
+	from: 'package',
+	package: 'neverthrow',
+	name: ['Ok', 'Err']
+});
 const NEVERTHROW_FILE = /[\\/]node_modules[\\/]neverthrow[\\/]/;
 
 /** Whether each program loads neverthrow at all; the rule does nothing in one that does not. */
