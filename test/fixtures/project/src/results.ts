@@ -9,5 +9,6 @@ export async function run(): Promise<number> {
 	void check(2);
 	const kept = check(3);
 	const awaited = await later(3);
+
 	return kept.unwrapOr(0) + awaited.unwrapOr(0);
 }

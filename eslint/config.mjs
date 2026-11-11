@@ -1,4 +1,5 @@
 import js from '@eslint/js';
+import stylistic from '@stylistic/eslint-plugin';
 import ts from 'typescript-eslint';
 import prettierConfig from 'eslint-config-prettier';
 import prettierPlugin from 'eslint-plugin-prettier';
@@ -173,13 +174,22 @@ export async function createConfig(options = {}) {
 		plugins: {
 			prettier: prettierPlugin,
 			'unused-imports': unusedImports,
-			'@davidteju': ownPlugin
+			'@davidteju': ownPlugin,
+			'@stylistic': stylistic
 		},
 		settings: {
 			'import-x/resolver-next': [createTypeScriptImportResolver()]
 		},
 		rules: {
 			'prettier/prettier': 'error',
+
+			// Blank lines Prettier will not add: each step and its check read as a paragraph
+			'@stylistic/padding-line-between-statements': [
+				'error',
+				{ blankLine: 'always', prev: 'if', next: '*' },
+				{ blankLine: 'any', prev: 'if', next: 'if' },
+				{ blankLine: 'always', prev: '*', next: 'return' }
+			],
 
 			// Import hygiene
 			'import-x/no-cycle': ['error', { maxDepth: 5 }],

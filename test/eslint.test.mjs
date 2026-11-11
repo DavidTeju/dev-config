@@ -9,7 +9,8 @@ const RULES = new Set([
 	'@typescript-eslint/consistent-type-assertions',
 	'@typescript-eslint/no-floating-promises',
 	'@davidteju/no-throw',
-	'@davidteju/must-use-result'
+	'@davidteju/must-use-result',
+	'@stylistic/padding-line-between-statements'
 ]);
 
 /**
@@ -88,6 +89,16 @@ describe('must-use-result', () => {
 		assert.deepEqual(reported('results.ts'), [
 			{ rule: '@davidteju/must-use-result', line: 7 },
 			{ rule: '@davidteju/must-use-result', line: 8 }
+		]);
+	});
+});
+
+describe('statement spacing', () => {
+	it('wants a blank line after each if and before a return', () => {
+		assert.deepEqual(reported('spacing.ts'), [
+			{ rule: '@stylistic/padding-line-between-statements', line: 3 },
+			{ rule: '@stylistic/padding-line-between-statements', line: 5 },
+			{ rule: '@stylistic/padding-line-between-statements', line: 6 }
 		]);
 	});
 });

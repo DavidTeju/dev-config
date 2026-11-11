@@ -1,6 +1,6 @@
 {
 	"name": "@davidteju/dev-config",
-	"version": "2.0.1",
+	"version": "2.1.0",
 	"description": "Shared ESLint, Prettier, TypeScript, and tooling configs for DavidTeju projects",
 	"type": "module",
 	"exports": {
@@ -26,6 +26,7 @@
 	},
 	"dependencies": {
 		"@eslint/js": "^10.0.0",
+		"@stylistic/eslint-plugin": "^5.10.0",
 		"@typescript-eslint/type-utils": "^8.0.0",
 		"@typescript-eslint/utils": "^8.0.0",
 		"@vitejs/plugin-react": "^4.0.0",

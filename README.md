@@ -119,6 +119,7 @@ export default [
 **All source files:**
 
 - Prettier as an ESLint rule (`prettier/prettier: error`)
+- **Blank lines Prettier will not add** (`@stylistic/padding-line-between-statements`, autofixable): one after each `if` (except between consecutive `if`s) and one before each `return`, so each step and its error check read as a paragraph
 - TypeScript strictness: no `any`, consistent type imports, no non-null assertions
 - **No type casts** (`consistent-type-assertions: never`; `as const` is allowed). Narrow with a real check instead: `typeof`, `instanceof`, a type guard, or a zod schema for data from outside.
 - **No `throw`** (`@davidteju/no-throw`). Return a [neverthrow](https://github.com/supermacro/neverthrow) `Result` for a failure the caller can act on; call `panic()` for a bug.
