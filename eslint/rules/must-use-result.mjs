@@ -45,7 +45,7 @@ export const mustUseResult = {
 		docs: { description: 'Require every neverthrow Result to be used' },
 		messages: {
 			dropped:
-				'This Result is dropped, so its error is swallowed. Handle it (match, map, return it, or `?` via safeTry), or discard it on purpose with `void`.'
+				'This Result is dropped, so its error is swallowed. Handle it (check isErr(), match, map or return it), or discard it on purpose with `void`.'
 		},
 		schema: []
 	},

@@ -1,6 +1,6 @@
 {
 	"name": "@davidteju/dev-config",
-	"version": "2.0.0",
+	"version": "2.0.1",
 	"description": "Shared ESLint, Prettier, TypeScript, and tooling configs for DavidTeju projects",
 	"type": "module",
 	"exports": {
