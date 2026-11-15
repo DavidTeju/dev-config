@@ -5,12 +5,22 @@ import { ESLint } from 'eslint';
 import { createConfig } from '../eslint/config.mjs';
 
 const project = path.join(import.meta.dirname, 'fixtures/project');
+const CLOCK_RULES = new Set([
+	'@davidteju/no-fixed-sleep',
+	'@davidteju/poll-timeout-floor',
+	'@davidteju/no-elapsed-time-assertion',
+	'@davidteju/no-exact-timer-count'
+]);
 const RULES = new Set([
 	'@typescript-eslint/consistent-type-assertions',
 	'@typescript-eslint/no-floating-promises',
 	'@davidteju/no-throw',
 	'@davidteju/must-use-result',
-	'@stylistic/padding-line-between-statements'
+	'@stylistic/padding-line-between-statements',
+	'@davidteju/no-fixed-sleep',
+	'@davidteju/poll-timeout-floor',
+	'@davidteju/no-elapsed-time-assertion',
+	'@davidteju/no-exact-timer-count'
 ]);
 
 /**
@@ -100,5 +110,77 @@ describe('statement spacing', () => {
 			{ rule: '@stylistic/padding-line-between-statements', line: 5 },
 			{ rule: '@stylistic/padding-line-between-statements', line: 6 }
 		]);
+	});
+});
+
+describe('clock-based tests', () => {
+	const at = (rule, lines) => lines.map((line) => ({ rule, line }));
+
+	it('reports a fixed sleep in a test, in each form it takes', () => {
+		assert.deepEqual(
+			reported('sleeps.test.ts'),
+			at('@davidteju/no-fixed-sleep', [11, 12, 14, 16, 17, 18, 19])
+		);
+	});
+
+	it('reports setTimeout(ms) from node:timers/promises', () => {
+		assert.deepEqual(reported('timers-promises.test.ts'), at('@davidteju/no-fixed-sleep', [5, 6]));
+	});
+
+	it('leaves product code alone: only tests must wait on conditions', () => {
+		assert.deepEqual(reported('sleeps.ts'), []);
+	});
+
+	it('reports a poll timeout below the floor, and vi.waitFor left at its 1 s default', () => {
+		assert.deepEqual(
+			reported('polls.test.ts'),
+			at('@davidteju/poll-timeout-floor', [10, 11, 12, 13, 14])
+		);
+	});
+
+	it('reports an assertion on measured wall time, not a timestamp in the past', () => {
+		assert.deepEqual(
+			reported('elapsed.test.ts'),
+			at('@davidteju/no-elapsed-time-assertion', [7, 10, 11])
+		);
+	});
+
+	it('reports an exact count of fake timers other than none', () => {
+		assert.deepEqual(
+			reported('timer-count.test.ts'),
+			at('@davidteju/no-exact-timer-count', [5, 6])
+		);
+	});
+
+	it('names the fix in every message', async () => {
+		const eslint = new ESLint({
+			cwd: project,
+			overrideConfigFile: true,
+			overrideConfig: await createConfig()
+		});
+		const results = await eslint.lintFiles(['src/*.test.ts']);
+		const messages = results
+			.flatMap((result) => result.messages)
+			.filter((message) => CLOCK_RULES.has(message.ruleId ?? ''));
+		assert.ok(messages.length > 0);
+		for (const message of messages) {
+			assert.match(message.message, /vi\.useFakeTimers|condition/, message.message);
+		}
+	});
+});
+
+describe('poll-timeout-floor autofix', () => {
+	it('gives a bare vi.waitFor the floor as its timeout, and leaves short explicit ones to a person', async () => {
+		const eslint = new ESLint({
+			cwd: project,
+			overrideConfigFile: true,
+			overrideConfig: await createConfig(),
+			fix: true
+		});
+		const [result] = await eslint.lintFiles(['src/polls.test.ts']);
+		const fixed = result.output ?? '';
+		assert.match(fixed, /await vi\.waitFor\(\(\) => 1, \{ timeout: 5000 \}\);/);
+		assert.match(fixed, /await vi\.waitFor\(\(\) => 1, 200\);/);
+		assert.match(fixed, /expect\.poll\(\(\) => 1, \{ timeout: 500 \}\);/);
 	});
 });

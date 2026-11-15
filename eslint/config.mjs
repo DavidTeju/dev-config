@@ -12,7 +12,11 @@ import noOnlyTests from 'eslint-plugin-no-only-tests';
 import n from 'eslint-plugin-n';
 import globals from 'globals';
 import { mustUseResult } from './rules/must-use-result.mjs';
+import { noElapsedTimeAssertion } from './rules/no-elapsed-time-assertion.mjs';
+import { noExactTimerCount } from './rules/no-exact-timer-count.mjs';
+import { noFixedSleep } from './rules/no-fixed-sleep.mjs';
 import { noThrow } from './rules/no-throw.mjs';
+import { pollTimeoutFloor } from './rules/poll-timeout-floor.mjs';
 
 /** Glob patterns that identify test and benchmark files. */
 const testFilePatterns = [
@@ -29,7 +33,16 @@ const uncheckedFilePatterns = ['**/unchecked.{ts,tsx}'];
 const panicFilePatterns = ['**/panic.{ts,tsx,js,mjs}'];
 
 /** This package's own rules. */
-const ownPlugin = { rules: { 'must-use-result': mustUseResult, 'no-throw': noThrow } };
+const ownPlugin = {
+	rules: {
+		'must-use-result': mustUseResult,
+		'no-throw': noThrow,
+		'no-fixed-sleep': noFixedSleep,
+		'poll-timeout-floor': pollTimeoutFloor,
+		'no-elapsed-time-assertion': noElapsedTimeAssertion,
+		'no-exact-timer-count': noExactTimerCount
+	}
+};
 
 /**
  * Build Svelte-specific config objects.
@@ -338,6 +351,18 @@ export async function createConfig(options = {}) {
 	} catch {
 		// @vitest/eslint-plugin not installed — skip vitest rules
 	}
+
+	// Tests wait on conditions, not the wall clock: a fixed wait is too short under load and
+	// waits for nothing on a quiet machine
+	config.push({
+		files: testFilePatterns,
+		rules: {
+			'@davidteju/no-fixed-sleep': 'error',
+			'@davidteju/poll-timeout-floor': 'error',
+			'@davidteju/no-elapsed-time-assertion': 'error',
+			'@davidteju/no-exact-timer-count': 'error'
+		}
+	});
 
 	// Catch .only left in tests
 	config.push({

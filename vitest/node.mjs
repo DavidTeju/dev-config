@@ -1,4 +1,5 @@
 import path from 'path';
+import { POLL_TIMEOUT_FLOOR_MS } from './poll-floor.mjs';
 
 /**
  * Creates a base Vitest config for plain Node/TypeScript services.
@@ -19,6 +20,8 @@ export function createVitestConfig({
 		test: {
 			environment: 'node',
 			globals: true,
+			// Vitest's 1 s default fails on a busy machine; see poll-floor.mjs
+			expect: { poll: { timeout: POLL_TIMEOUT_FLOOR_MS } },
 			setupFiles,
 			include,
 			coverage: {
