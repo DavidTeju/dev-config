@@ -196,7 +196,8 @@ export const noFixedSleep = {
 					return;
 				}
 
-				if (node.callee.type === 'Identifier' && name === 'setTimeout') {
+				// The global's: `setTimeout(...)`, or `globalThis.setTimeout(...)` and the like.
+				if (name === 'setTimeout') {
 					const resolve = enclosingResolve(context, node);
 					if (resolve && second && !isZero(second) && resolvesOnly(first, resolve)) {
 						context.report({ node, messageId: 'sleep' });

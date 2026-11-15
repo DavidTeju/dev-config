@@ -191,7 +191,7 @@ describe('clock rules, from the review of their first version', () => {
 	it('catches the sleep forms first missed, and not an unawaited delay() or a helper under test', () => {
 		assert.deepEqual(
 			reported('review-sleeps.test.ts'),
-			at('@davidteju/no-fixed-sleep', [11, 13, 17, 18, 19, 20])
+			at('@davidteju/no-fixed-sleep', [11, 13, 17, 18, 19, 20, 21])
 		);
 	});
 
@@ -232,7 +232,7 @@ describe('clock rules without type information', () => {
 		// Line 17 sleeps for a typed `ms`; without types it is left alone.
 		assert.deepEqual(
 			untyped('review-sleeps.test.ts').filter(({ rule }) => rule === '@davidteju/no-fixed-sleep'),
-			[11, 13, 18, 19, 20].map((line) => ({ rule: '@davidteju/no-fixed-sleep', line }))
+			[11, 13, 18, 19, 20, 21].map((line) => ({ rule: '@davidteju/no-fixed-sleep', line }))
 		);
 	});
 });

@@ -18,6 +18,7 @@ export async function sleeps(): Promise<void> {
 	await utils.sleep(100);
 	await timers.setTimeout(100);
 	await nap(100);
+	await new Promise<void>((resolve) => globalThis.setTimeout(resolve, 100));
 }
 
 export async function allowed(): Promise<void> {
