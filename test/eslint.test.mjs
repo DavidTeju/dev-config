@@ -184,3 +184,55 @@ describe('poll-timeout-floor autofix', () => {
 		assert.match(fixed, /expect\.poll\(\(\) => 1, \{ timeout: 500 \}\);/);
 	});
 });
+
+describe('clock rules, from the review of their first version', () => {
+	const at = (rule, lines) => lines.map((line) => ({ rule, line }));
+
+	it('catches the sleep forms first missed, and not an unawaited delay() or a helper under test', () => {
+		assert.deepEqual(
+			reported('review-sleeps.test.ts'),
+			at('@davidteju/no-fixed-sleep', [11, 13, 17, 18, 19, 20])
+		);
+	});
+
+	it('does not crash on import-equals', () => {
+		assert.deepEqual(reported('import-equals.test.ts'), []);
+	});
+
+	it('reports a measured delta only where it is asserted against a bound', () => {
+		assert.deepEqual(
+			reported('review-elapsed.test.ts'),
+			at('@davidteju/no-elapsed-time-assertion', [15, 17, 18])
+		);
+	});
+
+	it('covers vi.waitUntil and quoted keys, and leaves spread options and baselines alone', () => {
+		assert.deepEqual(
+			reported('review-polls.test.ts'),
+			at('@davidteju/poll-timeout-floor', [11, 13, 15])
+		);
+	});
+
+	it('fixes a parenthesised callback after its parentheses', async () => {
+		const eslint = new ESLint({
+			cwd: project,
+			overrideConfigFile: true,
+			overrideConfig: [...(await createConfig()), { rules: { 'prettier/prettier': 'off' } }],
+			fix: true
+		});
+		const [result] = await eslint.lintFiles(['src/review-polls.test.ts']);
+		assert.match(result.output ?? '', /await vi\.waitFor\(\(\(\) => 1\), \{ timeout: 5000 \}\);/);
+		assert.match(result.output ?? '', /await vi\.waitUntil\(\(\) => 1, \{ timeout: 5000 \}\);/);
+	});
+});
+
+describe('clock rules without type information', () => {
+	it('report only literal and const durations, never a guess', async () => {
+		const untyped = await lintFixtures(await createConfig({ typeChecked: false }));
+		// Line 17 sleeps for a typed `ms`; without types it is left alone.
+		assert.deepEqual(
+			untyped('review-sleeps.test.ts').filter(({ rule }) => rule === '@davidteju/no-fixed-sleep'),
+			[11, 13, 18, 19, 20].map((line) => ({ rule: '@davidteju/no-fixed-sleep', line }))
+		);
+	});
+});

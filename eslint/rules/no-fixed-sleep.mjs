@@ -10,56 +10,88 @@ import {
 } from './clock.mjs';
 
 /**
- * Reports a test that sleeps for a fixed time: `new Promise((r) => setTimeout(r, ms))`, a
- * `sleep`/`wait`/`pause`/`delay(ms)` helper, `setTimeout(ms)` from `node:timers/promises`,
- * `scheduler.wait(ms)` and Playwright's `waitForTimeout`. On a loaded machine the sleep is too
- * short and the test fails; on a quiet one it waits for nothing, and a test that sleeps to prove
- * something did not happen passes whether or not it would have. A zero or missing delay, which
- * yields one turn of the event loop, is allowed.
+ * Reports a test that sleeps for a fixed time: `new Promise((r) => setTimeout(r, ms))`, an
+ * awaited `sleep`/`wait`/`pause`/`delay(ms)` helper (`utils.sleep(ms)` too), `setTimeout(ms)`
+ * from `node:timers/promises` however it is imported, `scheduler.wait(ms)` and Playwright's
+ * `waitForTimeout`. On a loaded machine the sleep is too short and the test fails; on a quiet one
+ * it waits for nothing, and a test that sleeps to prove something did not happen passes whether
+ * or not it would have. Allowed: a zero or missing delay, which yields one turn of the event loop;
+ * a watchdog that resolves with a value; a helper call that is not awaited (an RxJS or msw
+ * `delay` operator, or a helper under test run on fake timers).
  */
 
 const SLEEP_HELPERS = new Set(['sleep', 'wait', 'pause', 'delay']);
+const TIMERS_PROMISES = /^(node:)?timers\/promises$/;
+
+/** @param {import('typescript').Type} type */
+const isNumberType = (type) =>
+	type.isUnion()
+		? type.types.some((part) => (part.flags & ts.TypeFlags.NumberLike) !== 0)
+		: (type.flags & ts.TypeFlags.NumberLike) !== 0;
 
 /**
- * Whether a helper's first argument is a duration: a number, or something that is neither a
- * function nor an object (so `wait(() => ready)` and `wait({ until })` are left alone).
+ * Whether a call's first argument is a duration: a non-zero number, a `const` holding one, or,
+ * with type information, anything typed as a number. Without types, nothing else counts.
  * @param {import('eslint').Rule.RuleContext} context
  * @param {import('estree').Node | undefined} node
  */
 function isDuration(context, node) {
 	if (!node || node.type === 'SpreadElement' || isFunction(node) || isZero(node)) return false;
-	if (node.type === 'ObjectExpression' || node.type === 'ArrayExpression') return false;
-	if (node.type === 'Literal') return typeof node.value === 'number';
 
 	const known = staticNumber(context, node);
 	if (known !== undefined) return known !== 0;
+	if (node.type === 'Literal') return false;
 
-	// With type information, a duration is whatever is typed as a number.
 	const services = context.sourceCode.parserServices;
-	if (services?.program && services.esTreeNodeToTSNodeMap) {
-		const checker = services.program.getTypeChecker();
-		const type = checker.getTypeAtLocation(services.esTreeNodeToTSNodeMap.get(node));
+	if (!services?.program || !services.esTreeNodeToTSNodeMap) return false;
 
-		return (type.flags & ts.TypeFlags.NumberLike) !== 0;
-	}
+	const checker = services.program.getTypeChecker();
 
-	return true;
+	return isNumberType(checker.getTypeAtLocation(services.esTreeNodeToTSNodeMap.get(node)));
 }
 
 /**
- * Whether `setTimeout` here is the promise one from `node:timers/promises`, whose first argument
- * is the delay.
+ * How `name` is imported from `node:timers/promises` here: `'setTimeout'` for that function
+ * under any local name, `'module'` for a namespace or default import, else `undefined`.
+ * @param {import('eslint').Rule.RuleContext} context
+ * @param {import('estree').Node} node
+ * @param {string} name
+ */
+function timersImport(context, node, name) {
+	const definition = findVariable(context.sourceCode.getScope(node), name)?.defs[0];
+	// Only an ES import has a source; `import x = require(...)` is left alone.
+	if (definition?.type !== 'ImportBinding' || definition.parent?.type !== 'ImportDeclaration') {
+		return undefined;
+	}
+
+	if (!TIMERS_PROMISES.test(String(definition.parent.source.value))) return undefined;
+
+	const specifier = definition.node;
+	if (specifier.type !== 'ImportSpecifier') return 'module';
+
+	const imported =
+		specifier.imported.type === 'Identifier' ? specifier.imported.name : specifier.imported.value;
+
+	return imported === 'setTimeout' ? 'setTimeout' : undefined;
+}
+
+/**
+ * Whether this call is `setTimeout(ms)` from `node:timers/promises`: imported by name (under any
+ * local name), or called on the module (`timers.setTimeout(ms)`).
  * @param {import('eslint').Rule.RuleContext} context
  * @param {import('estree').CallExpression} node
  */
 function isPromiseSetTimeout(context, node) {
-	if (node.callee.type !== 'Identifier') return false;
-
-	const definition = findVariable(context.sourceCode.getScope(node), node.callee.name)?.defs[0];
+	const { callee } = node;
+	if (callee.type === 'Identifier') {
+		return timersImport(context, node, callee.name) === 'setTimeout';
+	}
 
 	return (
-		definition?.type === 'ImportBinding' &&
-		/^(node:)?timers\/promises$/.test(String(definition.parent.source.value))
+		callee.type === 'MemberExpression' &&
+		callee.object.type === 'Identifier' &&
+		calleeName(node) === 'setTimeout' &&
+		timersImport(context, node, callee.object.name) === 'module'
 	);
 }
 
@@ -88,16 +120,25 @@ function enclosingResolve(context, node) {
 	return undefined;
 }
 
+/** @param {import('estree').Node | undefined} node */
+const isNoValue = (node) =>
+	node === undefined ||
+	(node.type === 'Identifier' && node.name === 'undefined') ||
+	(node.type === 'UnaryExpression' && node.operator === 'void');
+
 /**
- * Whether a timer callback just resolves the promise: `resolve` or `() => resolve()`. Resolving
- * with a value, as in `setTimeout(() => resolve('timed out'), ms)` raced against the real
- * outcome, is a watchdog rather than a sleep and is left alone.
+ * Whether a timer callback just resolves the promise: `resolve`, `() => resolve()`, or the same as
+ * a function expression, with no value or `undefined`. Resolving with a value, as in
+ * `setTimeout(() => resolve('timed out'), ms)` raced against the real outcome, is a watchdog
+ * rather than a sleep.
  * @param {import('estree').Node | undefined} callback
  * @param {string} resolve
  */
 function resolvesOnly(callback, resolve) {
 	if (callback?.type === 'Identifier') return callback.name === resolve;
-	if (callback?.type !== 'ArrowFunctionExpression') return false;
+	if (callback?.type !== 'ArrowFunctionExpression' && callback?.type !== 'FunctionExpression') {
+		return false;
+	}
 
 	const body =
 		callback.body.type === 'BlockStatement' && callback.body.body.length === 1
@@ -109,7 +150,22 @@ function resolvesOnly(callback, resolve) {
 		call.type === 'CallExpression' &&
 		call.callee.type === 'Identifier' &&
 		call.callee.name === resolve &&
-		call.arguments.length === 0
+		call.arguments.length <= 1 &&
+		isNoValue(call.arguments[0])
+	);
+}
+
+/**
+ * Whether the test waits on this call: awaited, or returned (as a concise arrow body too).
+ * @param {import('estree').Node & { parent?: import('estree').Node }} node
+ */
+function isWaitedOn(node) {
+	const { parent } = node;
+
+	return (
+		parent?.type === 'AwaitExpression' ||
+		parent?.type === 'ReturnStatement' ||
+		(parent?.type === 'ArrowFunctionExpression' && parent.body === node)
 	);
 }
 
@@ -134,13 +190,13 @@ export const noFixedSleep = {
 					return;
 				}
 
-				if (name === 'setTimeout') {
-					if (isPromiseSetTimeout(context, node)) {
-						if (isDuration(context, first)) context.report({ node, messageId: 'sleep' });
+				if (isPromiseSetTimeout(context, node)) {
+					if (isDuration(context, first)) context.report({ node, messageId: 'sleep' });
 
-						return;
-					}
+					return;
+				}
 
+				if (node.callee.type === 'Identifier' && name === 'setTimeout') {
 					const resolve = enclosingResolve(context, node);
 					if (resolve && second && !isZero(second) && resolvesOnly(first, resolve)) {
 						context.report({ node, messageId: 'sleep' });
@@ -149,14 +205,10 @@ export const noFixedSleep = {
 					return;
 				}
 
-				const isHelper =
-					node.callee.type === 'Identifier'
-						? SLEEP_HELPERS.has(node.callee.name)
-						: name === 'wait' &&
-							node.callee.type === 'MemberExpression' &&
-							node.callee.object.type === 'Identifier' &&
-							node.callee.object.name === 'scheduler';
-				if (isHelper && isDuration(context, first)) context.report({ node, messageId: 'sleep' });
+				const helper = name !== undefined && SLEEP_HELPERS.has(name);
+				if (helper && isWaitedOn(node) && isDuration(context, first)) {
+					context.report({ node, messageId: 'sleep' });
+				}
 			}
 		};
 	}

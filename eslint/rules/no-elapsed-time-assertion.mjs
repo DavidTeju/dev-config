@@ -9,6 +9,15 @@ import { FAKE_TIMERS, findVariable, isExpectArgument, isMemberCall } from './clo
  */
 
 const COMPARISONS = new Set(['<', '<=', '>', '>=']);
+const ARITHMETIC = new Set(['+', '-', '*', '/']);
+/** Matchers that bound a value; an exact match on a delta only makes sense on a fake clock. */
+const BOUNDS = new Set([
+	'toBeLessThan',
+	'toBeLessThanOrEqual',
+	'toBeGreaterThan',
+	'toBeGreaterThanOrEqual'
+]);
+const ASSERTS = new Set(['assert', 'ok', 'expect', 'strictEqual', 'equal']);
 
 /** @param {import('estree').Node | null | undefined} node */
 function isClockReading(node) {
@@ -28,7 +37,8 @@ function isClockReading(node) {
 }
 
 /**
- * Whether an expression is a clock reading, or a variable initialised with one.
+ * Whether an expression is a clock reading, or a variable given one, where it is declared or in
+ * any later assignment (`started = Date.now()` in a beforeEach).
  * @param {import('eslint').Rule.RuleContext} context
  * @param {import('estree').Node} node
  */
@@ -36,9 +46,13 @@ function isReadingOrMark(context, node) {
 	if (isClockReading(node)) return true;
 	if (node.type !== 'Identifier') return false;
 
-	const definition = findVariable(context.sourceCode.getScope(node), node.name)?.defs[0];
+	const variable = findVariable(context.sourceCode.getScope(node), node.name);
+	if (!variable) return false;
 
-	return definition?.type === 'Variable' && isClockReading(definition.node.init);
+	const [definition] = variable.defs;
+	if (definition?.type === 'Variable' && isClockReading(definition.node.init)) return true;
+
+	return variable.references.some((reference) => isClockReading(reference.writeExpr));
 }
 
 /**
@@ -56,13 +70,74 @@ function isElapsed(context, node) {
 }
 
 /**
- * Where a measured duration is asserted on: as expect()'s argument or a comparison operand.
+ * The outermost expression a measured value is part of: `(now - start) / 1000` for its delta.
+ * @param {import('estree').Node & { parent?: import('estree').Node }} node
+ */
+function widened(node) {
+	let current = node;
+	while (current.parent?.type === 'BinaryExpression' && ARITHMETIC.has(current.parent.operator)) {
+		current = current.parent;
+	}
+
+	return current;
+}
+
+/**
+ * Whether a call is an assertion: `assert(...)`, `assert.ok(...)`, `expect(...)` and the like.
+ * @param {import('estree').Node | undefined} node
+ */
+function isAssertCall(node) {
+	if (node?.type !== 'CallExpression') return false;
+
+	const { callee } = node;
+	if (callee.type === 'Identifier') return ASSERTS.has(callee.name);
+
+	return (
+		callee.type === 'MemberExpression' &&
+		callee.object.type === 'Identifier' &&
+		callee.object.name === 'assert'
+	);
+}
+
+/**
+ * Whether `expect(node)` goes on to a bound matcher: `.toBeLessThan(n)`, `.not.toBeGreaterThan(n)`.
+ * @param {import('estree').Node & { parent?: import('estree').Node }} node
+ */
+function isBoundedByExpect(node) {
+	if (!isExpectArgument(node)) return false;
+
+	let member = /** @type {{ parent?: import('estree').Node }} */ (node.parent).parent;
+	if (
+		member?.type === 'MemberExpression' &&
+		member.property.type === 'Identifier' &&
+		member.property.name === 'not'
+	) {
+		member = /** @type {{ parent?: import('estree').Node }} */ (member).parent;
+	}
+
+	return (
+		member?.type === 'MemberExpression' &&
+		member.property.type === 'Identifier' &&
+		BOUNDS.has(member.property.name)
+	);
+}
+
+/**
+ * Where a measured duration is asserted against a bound: as expect()'s argument with a bound
+ * matcher, or compared inside an assertion (`assert.ok(now - start < n)`). A comparison in an
+ * `if` or a deadline loop is not an assertion.
  * @param {import('estree').Node & { parent?: import('estree').Node }} node
  */
 function isAsserted(node) {
-	if (isExpectArgument(node)) return true;
+	const value = widened(node);
+	if (isBoundedByExpect(value)) return true;
 
-	return node.parent?.type === 'BinaryExpression' && COMPARISONS.has(node.parent.operator);
+	const { parent } = /** @type {{ parent?: import('estree').Node }} */ (value);
+	if (parent?.type !== 'BinaryExpression' || !COMPARISONS.has(parent.operator)) return false;
+
+	const comparison = widened(parent);
+
+	return isAssertCall(/** @type {{ parent?: import('estree').Node }} */ (comparison).parent);
 }
 
 /** @type {import('eslint').Rule.RuleModule} */

@@ -1,10 +1,11 @@
-import { FAKE_TIMERS, isExpectArgument, isMemberCall, isZero } from './clock.mjs';
+import { FAKE_TIMERS, isExpectArgument, isMemberCall, staticNumber } from './clock.mjs';
 
 /**
  * Reports `expect(vi.getTimerCount()).toBe(n)` for any n but 0. The count includes every fake
  * timer, ones a library or an unrelated retry sets among them, so an exact count breaks on
  * changes that do not touch what the test guards. `toBe(0)`, nothing left pending, is a property
- * of the code rather than a count of its timers, and is allowed.
+ * of the code rather than a count of its timers, and is allowed, as is a baseline taken earlier
+ * (`toBe(before)`): only a non-zero number is reported.
  */
 
 const EXACT = new Set(['toBe', 'toEqual', 'toStrictEqual']);
@@ -34,7 +35,9 @@ export const noExactTimerCount = {
 					EXACT.has(matcher.property.name) &&
 					call?.type === 'CallExpression' &&
 					call.callee === matcher &&
-					!isZero(call.arguments[0])
+					call.arguments[0] !== undefined &&
+					call.arguments[0].type !== 'SpreadElement' &&
+					(staticNumber(context, call.arguments[0]) ?? 0) !== 0
 				) {
 					context.report({ node: call, messageId: 'count' });
 				}

@@ -1,6 +1,6 @@
 {
 	"name": "@davidteju/dev-config",
-	"version": "2.1.0",
+	"version": "2.2.0",
 	"description": "Shared ESLint, Prettier, TypeScript, and tooling configs for DavidTeju projects",
 	"type": "module",
 	"exports": {
@@ -14,6 +14,7 @@
 		"./tsconfig/nextjs": "./tsconfig/nextjs.json",
 		"./vitest/node": "./vitest/node.mjs",
 		"./vitest/nextjs": "./vitest/nextjs.mjs",
+		"./vitest/poll-floor": "./vitest/poll-floor.mjs",
 		"./lint-staged/node": "./lint-staged/node.mjs",
 		"./lint-staged/svelte": "./lint-staged/svelte.mjs",
 		"./lint-staged/nextjs": "./lint-staged/nextjs.mjs",

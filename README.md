@@ -10,21 +10,22 @@ npm install --save-dev github:DavidTeju/dev-config
 
 ## What's included
 
-| Export path              | Description                                                                               |
-| ------------------------ | ----------------------------------------------------------------------------------------- |
-| `./eslint`               | `createConfig()`: the whole ESLint flat config, for Node, SvelteKit or Next.js            |
-| `./prettier/base`        | Base Prettier config (tabs, single quotes, no framework plugins)                          |
-| `./prettier/svelte`      | Prettier config with svelte + tailwind plugins                                            |
-| `./prettier/nextjs`      | Prettier config with tailwind plugin                                                      |
-| `./tsconfig/node`        | TypeScript config for plain Node/backend services (NodeNext, ESM, strict)                 |
-| `./tsconfig/node-native` | `node` preset for TypeScript that Node runs directly with type stripping (no build step)  |
-| `./tsconfig/svelte`      | TypeScript config for SvelteKit                                                           |
-| `./tsconfig/nextjs`      | TypeScript config for Next.js                                                             |
-| `./vitest/node`          | Vitest config factory for plain Node/TS services (node env, 5 s `expect.poll`, `@` alias) |
-| `./vitest/nextjs`        | Vitest config factory for Next.js (jsdom + React + `@` alias)                             |
-| `./lint-staged/node`     | lint-staged config for Node/TS services                                                   |
-| `./lint-staged/svelte`   | lint-staged config for SvelteKit                                                          |
-| `./lint-staged/nextjs`   | lint-staged config for Next.js                                                            |
+| Export path              | Description                                                                                         |
+| ------------------------ | --------------------------------------------------------------------------------------------------- |
+| `./eslint`               | `createConfig()`: the whole ESLint flat config, for Node, SvelteKit or Next.js                      |
+| `./prettier/base`        | Base Prettier config (tabs, single quotes, no framework plugins)                                    |
+| `./prettier/svelte`      | Prettier config with svelte + tailwind plugins                                                      |
+| `./prettier/nextjs`      | Prettier config with tailwind plugin                                                                |
+| `./tsconfig/node`        | TypeScript config for plain Node/backend services (NodeNext, ESM, strict)                           |
+| `./tsconfig/node-native` | `node` preset for TypeScript that Node runs directly with type stripping (no build step)            |
+| `./tsconfig/svelte`      | TypeScript config for SvelteKit                                                                     |
+| `./tsconfig/nextjs`      | TypeScript config for Next.js                                                                       |
+| `./vitest/node`          | Vitest config factory for plain Node/TS services (node env, 5 s `expect.poll`, `@` alias)           |
+| `./vitest/nextjs`        | Vitest config factory for Next.js (jsdom + React, 5 s `expect.poll`, `@` alias)                     |
+| `./vitest/poll-floor`    | `POLL_TIMEOUT_FLOOR_MS`, for a project with its own Vitest config to set `test.expect.poll.timeout` |
+| `./lint-staged/node`     | lint-staged config for Node/TS services                                                             |
+| `./lint-staged/svelte`   | lint-staged config for SvelteKit                                                                    |
+| `./lint-staged/nextjs`   | lint-staged config for Next.js                                                                      |
 
 ## Node / backend services
 
@@ -136,7 +137,7 @@ export default [
 **Tests wait on conditions, not the clock** (this package's own rules, on in test files):
 
 - `@davidteju/no-fixed-sleep`: no `new Promise((r) => setTimeout(r, ms))`, `sleep`/`wait`/`pause`/`delay(ms)` helpers, `setTimeout(ms)` from `node:timers/promises`, `scheduler.wait(ms)` or Playwright's `waitForTimeout`. A zero delay (one turn of the event loop) and a watchdog that resolves with a value are allowed.
-- `@davidteju/poll-timeout-floor`: `expect.poll` and `vi.waitFor` get at least 5 s (`POLL_TIMEOUT_FLOOR_MS` in `vitest/poll-floor.mjs`). The shared Vitest configs make 5 s `expect.poll`'s default; a bare `vi.waitFor`, which Vitest leaves at 1 s, is reported and `--fix` adds `{ timeout: 5000 }`.
+- `@davidteju/poll-timeout-floor`: `expect.poll` and `vi.waitFor` get at least 5 s (`POLL_TIMEOUT_FLOOR_MS` in `vitest/poll-floor.mjs`). The shared Vitest configs make 5 s `expect.poll`'s default; a project with its own Vitest config (a SvelteKit app, say) sets `test.expect: { poll: { timeout: POLL_TIMEOUT_FLOOR_MS } }` from `./vitest/poll-floor`. A bare `vi.waitFor` or `vi.waitUntil`, which Vitest leaves at 1 s, is reported and `--fix` adds `{ timeout: 5000 }`.
 - `@davidteju/no-elapsed-time-assertion`: no asserting on `Date.now() - started` or `performance.now()` deltas. A timestamp in the past (`Date.now() - HOUR_MS`) is fine.
 - `@davidteju/no-exact-timer-count`: no `expect(vi.getTimerCount()).toBe(n)` for n other than 0.
 
