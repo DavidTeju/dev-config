@@ -22,8 +22,19 @@
 		"./knip/svelte": "./knip/svelte.mjs",
 		"./knip/nextjs": "./knip/nextjs.mjs"
 	},
+	"files": [
+		"eslint",
+		"prettier",
+		"tsconfig",
+		"vitest",
+		"lint-staged",
+		"knip"
+	],
+	"workspaces": [
+		"packages/*"
+	],
 	"scripts": {
-		"test": "node --test test/*.test.mjs"
+		"test": "node --test test/*.test.mjs && npm run verify --workspace @davidteju/result"
 	},
 	"dependencies": {
 		"@eslint/js": "^10.0.0",

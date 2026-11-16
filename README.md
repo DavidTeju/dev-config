@@ -8,6 +8,10 @@ Install from GitHub:
 npm install --save-dev github:DavidTeju/dev-config
 ```
 
+This repository also holds [`@davidteju/result`](packages/result/README.md), the runtime helpers
+the lint rules point at (`panic`, `unchecked`, tagged errors). It installs from a GitHub release,
+not with the command above.
+
 ## What's included
 
 | Export path              | Description                                                                                         |
@@ -126,7 +130,7 @@ export default [
 - **No `throw`** (`@davidteju/no-throw`). Return a [neverthrow](https://github.com/supermacro/neverthrow) `Result` for a failure the caller can act on; call `panic()` for a bug.
 - **`@davidteju/must-use-result`** reports a neverthrow `Result` that is computed and dropped, like Rust's `#[must_use]`. `void result` discards one on purpose; an unawaited `ResultAsync` is reported by `no-floating-promises`. It does nothing in a project that does not load neverthrow.
 - Both rules need type information, which is on by default (`typeChecked: true`). With `typeChecked: false` the throw ban is off too, because a dropped Result could not be caught.
-- **Escape hatches, one file each**, so every use is greppable: a file named `unchecked.ts` may cast, and a file named `panic.ts` may throw. [`@davidteju/result`](https://github.com/DavidTeju/result) ships both, with tagged error values and the neverthrow helpers that make the bans livable.
+- **Escape hatches, one file each**, so every use is greppable: a file named `unchecked.ts` may cast, and a file named `panic.ts` may throw. [`@davidteju/result`](packages/result/README.md) ships both, with tagged error values and the neverthrow helpers that make the bans livable.
 - Code quality: complexity cap (15), no nested ternaries, no param reassignment
 - Security: no `eval` / `implied-eval`
 
