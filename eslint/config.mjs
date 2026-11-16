@@ -26,6 +26,15 @@ const testFilePatterns = [
 ];
 
 /**
+ * Helpers that only tests import (fakes, fixtures, support code): anything in a `test/`,
+ * `tests/` or `e2e/` folder at the project root, or a `test/` or `tests/` folder in `src/`.
+ * They may throw and cast; they still may not drop a Result, which would hide a failure in every
+ * test that uses them. Anchored so a route or folder deeper in `src` that happens to be named
+ * `test` stays product code.
+ */
+const testHelperPatterns = ['{test,tests,e2e}/**/*.{ts,tsx}', 'src/{test,tests}/**/*.{ts,tsx}'];
+
+/**
  * The only files allowed to cast (`unchecked.ts`) or throw (`panic.ts`). Keeping each escape
  * hatch in one named file makes every use of it greppable, like Rust's `unsafe` and `panic!`.
  */
@@ -67,12 +76,6 @@ function buildSvelteConfigs(svelte, svelteConf) {
 					parser: ts.parser,
 					...(svelteConf ? { svelteConfig: svelteConf } : {})
 				}
-			},
-			rules: {
-				// Svelte 5's $effect tracks dependencies via synchronous reads. The official
-				// docs use bare statements (e.g. `messages.length;`) to declare trigger-only
-				// deps, and `void val` is the common lint-safe variant of that pattern.
-				'sonarjs/void-use': 'off'
 			}
 		},
 		{
@@ -225,6 +228,9 @@ export async function createConfig(options = {}) {
 			// SonarJS tuning (recommended rules are already on via base config)
 			'sonarjs/cognitive-complexity': ['warn', 15],
 			'sonarjs/no-duplicate-string': ['warn', { threshold: 4 }],
+			// `void` is how code discards on purpose: a Result (must-use-result), a promise
+			// (no-floating-promises), or a read that Svelte 5's $effect tracks as a dependency.
+			'sonarjs/void-use': 'off',
 
 			// TypeScript strictness
 			'@typescript-eslint/consistent-type-imports': 'error',
@@ -297,6 +303,14 @@ export async function createConfig(options = {}) {
 			rules: { '@davidteju/no-throw': 'off' }
 		}
 	);
+
+	config.push({
+		files: testHelperPatterns,
+		rules: {
+			'@davidteju/no-throw': 'off',
+			'@typescript-eslint/consistent-type-assertions': 'off'
+		}
+	});
 
 	// Test file overrides — relaxed rules for tests
 	config.push({

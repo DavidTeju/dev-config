@@ -16,6 +16,7 @@ const RULES = new Set([
 	'@typescript-eslint/no-floating-promises',
 	'@davidteju/no-throw',
 	'@davidteju/must-use-result',
+	'sonarjs/void-use',
 	'@stylistic/padding-line-between-statements',
 	'@davidteju/no-fixed-sleep',
 	'@davidteju/poll-timeout-floor',
@@ -31,7 +32,7 @@ async function lintFixtures(config) {
 	const eslint = new ESLint({ cwd: project, overrideConfigFile: true, overrideConfig: config });
 	/** @type {Map<string, { rule: string | null, line: number }[]>} */
 	const found = new Map();
-	for (const result of await eslint.lintFiles(['src/**/*.ts'])) {
+	for (const result of await eslint.lintFiles(['src/**/*.ts', 'e2e/**/*.ts'])) {
 		const fatal = result.messages.filter((message) => message.fatal);
 		assert.deepEqual(fatal, [], `ESLint could not parse ${result.filePath}`);
 		found.set(
@@ -72,6 +73,21 @@ describe('throw', () => {
 
 	it('allows throw in a file named panic.ts', () => {
 		assert.deepEqual(reported('panic.ts'), []);
+	});
+
+	it('lets a test helper under test/ throw and cast, but not drop a Result', () => {
+		assert.deepEqual(reported('fake-store.ts'), [{ rule: '@davidteju/must-use-result', line: 9 }]);
+	});
+
+	it('lets an e2e helper throw and cast', () => {
+		assert.deepEqual(reported('sign-in.ts'), []);
+	});
+
+	it('keeps the bans in product code under a folder that happens to be named test', () => {
+		assert.deepEqual(reported('page.ts'), [
+			{ rule: '@davidteju/no-throw', line: 3 },
+			{ rule: '@typescript-eslint/consistent-type-assertions', line: 5 }
+		]);
 	});
 
 	it('allows throw in tests', () => {

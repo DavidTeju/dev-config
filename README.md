@@ -126,13 +126,15 @@ export default [
 - **No `throw`** (`@davidteju/no-throw`). Return a [neverthrow](https://github.com/supermacro/neverthrow) `Result` for a failure the caller can act on; call `panic()` for a bug.
 - **`@davidteju/must-use-result`** reports a neverthrow `Result` that is computed and dropped, like Rust's `#[must_use]`. `void result` discards one on purpose; an unawaited `ResultAsync` is reported by `no-floating-promises`. It does nothing in a project that does not load neverthrow.
 - Both rules need type information, which is on by default (`typeChecked: true`). With `typeChecked: false` the throw ban is off too, because a dropped Result could not be caught.
-- **Escape hatches, one file each**, so every use is greppable: a file named `unchecked.ts` may cast, and a file named `panic.ts` may throw. Projects put `unchecked<T>()` and `panic()` helpers there.
+- **Escape hatches, one file each**, so every use is greppable: a file named `unchecked.ts` may cast, and a file named `panic.ts` may throw. [`@davidteju/result`](https://github.com/DavidTeju/result) ships both, with tagged error values and the neverthrow helpers that make the bans livable.
 - Code quality: complexity cap (15), no nested ternaries, no param reassignment
 - Security: no `eval` / `implied-eval`
 
 **Test files** get relaxed rules (`**/*.{test,spec}.{ts,tsx}`, `**/__tests__/**`, `**/benchmark/**`):
 
 - Allows `any`, type casts, `throw`, non-null assertions, `console`, and raw `Date` usage
+
+**Test helpers**, any other file in a `test/`, `tests/` or `e2e/` folder at the project root or a `test/` or `tests/` folder in `src/` (fakes, fixtures, support code), may cast and `throw`. Everything else stays as in product code, including `must-use-result`: a helper that drops a Result hides a failure in every test that calls it. A folder deeper in `src` named `test`, such as a route, is product code.
 
 **Tests wait on conditions, not the clock** (this package's own rules, on in test files):
 
@@ -165,6 +167,8 @@ export { default } from '@davidteju/dev-config/prettier/svelte';
 Both configs use tabs, single quotes, 100-char print width, and `prettier-plugin-tailwindcss`. The Svelte config additionally includes `prettier-plugin-svelte` and sets `trailingComma: 'none'`.
 
 ## TypeScript
+
+Every preset is `strict` plus `noUncheckedIndexedAccess` (an indexed read may be `undefined`) and `exactOptionalPropertyTypes` (an optional property is left out, never set to `undefined`; write `label?: string | undefined` where `undefined` is a value the field really takes).
 
 ```jsonc
 // tsconfig.json (Next.js)
