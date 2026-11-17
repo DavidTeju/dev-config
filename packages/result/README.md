@@ -11,7 +11,7 @@ It installs from a GitHub release, because npm cannot install a package from a f
 repository:
 
 ```bash
-npm install https://github.com/DavidTeju/dev-config/releases/download/result-v0.1.0/davidteju-result-0.1.0.tgz neverthrow
+npm install https://github.com/DavidTeju/dev-config/releases/download/result-v0.1.1/davidteju-result-0.1.1.tgz neverthrow
 ```
 
 The tarball holds the built JavaScript and types, so installing runs no build.

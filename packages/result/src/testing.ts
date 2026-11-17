@@ -1,6 +1,7 @@
 // The one way tests unwrap a Result: each fails the test, showing what came instead, when the
 // Result is not the one expected. Import from `@davidteju/result/testing`, in tests only.
 import { Result } from 'neverthrow';
+import { errorMessage } from './errors.ts';
 import { panic } from './panic.ts';
 
 /** A payload as JSON, BigInts and Errors shown as text; as `String()` when JSON cannot hold it. */
@@ -12,7 +13,10 @@ const shown = (payload: unknown): string =>
 
 			return field;
 		})
-	)().unwrapOr(String(payload));
+	)().match(
+		(json) => json,
+		(error) => `${String(payload)} (not JSON: ${errorMessage(error)})`
+	);
 
 /** The value of a Result a test expects to succeed. */
 export function value<T, E>(result: Result<T, E>): T {

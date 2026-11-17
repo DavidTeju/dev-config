@@ -1,6 +1,6 @@
 {
 	"name": "@davidteju/result",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"description": "The runtime half of @davidteju/dev-config's no-throw and no-cast rules: panic, unchecked, tagged errors and neverthrow helpers",
 	"type": "module",
 	"exports": {

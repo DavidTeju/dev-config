@@ -30,6 +30,7 @@ describe('showing what came instead', () => {
 		const loop: Record<string, unknown> = {};
 		loop.self = loop;
 		expect(() => value(err(loop))).toThrow('expected success, got [object Object]');
+		expect(() => value(err(loop))).toThrow('(not JSON: Converting circular structure to JSON');
 		expect(() => errorOf(ok(1n))).toThrow('expected a failure, got "1n"');
 		expect(() => value(err({ cause: new Error('disk full') }))).toThrow(
 			'expected success, got {"cause":"Error: disk full"}'

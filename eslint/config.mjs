@@ -12,6 +12,7 @@ import noOnlyTests from 'eslint-plugin-no-only-tests';
 import n from 'eslint-plugin-n';
 import globals from 'globals';
 import { mustUseResult } from './rules/must-use-result.mjs';
+import { noIgnoredError } from './rules/no-ignored-error.mjs';
 import { noElapsedTimeAssertion } from './rules/no-elapsed-time-assertion.mjs';
 import { noExactTimerCount } from './rules/no-exact-timer-count.mjs';
 import { noFixedSleep } from './rules/no-fixed-sleep.mjs';
@@ -45,6 +46,7 @@ const panicFilePatterns = ['**/panic.{ts,tsx,js,mjs}'];
 const ownPlugin = {
 	rules: {
 		'must-use-result': mustUseResult,
+		'no-ignored-error': noIgnoredError,
 		'no-throw': noThrow,
 		'no-fixed-sleep': noFixedSleep,
 		'poll-timeout-floor': pollTimeoutFloor,
@@ -244,6 +246,9 @@ export async function createConfig(options = {}) {
 			'no-nested-ternary': 'error',
 			'no-param-reassign': ['error', { props: false }],
 			'no-console': ['warn', { allow: ['warn', 'error'] }],
+			// A caught error is read: reported, wrapped or branched on, never dropped. Type
+			// information adds the neverthrow cases (unwrapOr, orElse, match, mapErr).
+			'@davidteju/no-ignored-error': 'error',
 
 			// Security
 			'no-eval': 'error',

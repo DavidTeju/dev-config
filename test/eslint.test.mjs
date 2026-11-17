@@ -16,6 +16,7 @@ const RULES = new Set([
 	'@typescript-eslint/no-floating-promises',
 	'@davidteju/no-throw',
 	'@davidteju/must-use-result',
+	'@davidteju/no-ignored-error',
 	'sonarjs/void-use',
 	'@stylistic/padding-line-between-statements',
 	'@davidteju/no-fixed-sleep',
@@ -116,6 +117,43 @@ describe('must-use-result', () => {
 			{ rule: '@davidteju/must-use-result', line: 7 },
 			{ rule: '@davidteju/must-use-result', line: 8 }
 		]);
+	});
+});
+
+describe('no-ignored-error', () => {
+	it('reports every handler that drops its error, and unwrapOr without orTee first', () => {
+		assert.deepEqual(
+			reported('ignored-errors.ts').map(({ line }) => line),
+			[10, 11, 12, 13, 14, 17, 19, 20, 21, 24]
+		);
+	});
+
+	it('reports nothing where the error is used, reported or re-raised', () => {
+		assert.ok(reported('ignored-errors.ts').every(({ line }) => line < 30));
+	});
+
+	it('catches the forms a review found it missed: bare fromPromise, a computed catch, a write-only error', () => {
+		assert.deepEqual(
+			reported('ignored-errors-review.ts')
+				.filter(({ line }) => line < 22)
+				.map(({ line }) => line),
+			[11, 12, 13, 16]
+		);
+	});
+
+	it('leaves zod-style catch, rest and default params, this, wrapped orTee and an Ok alone', () => {
+		assert.deepEqual(
+			reported('ignored-errors-review.ts').filter(({ line }) => line >= 22),
+			[]
+		);
+	});
+
+	it('still catches catch, .catch, .then and neverthrow error mappers without type information', async () => {
+		const untyped = await lintFixtures(await createConfig({ typeChecked: false }));
+		assert.deepEqual(
+			untyped('ignored-errors.ts').map(({ line }) => line),
+			[12, 13, 20, 21, 24]
+		);
 	});
 });
 

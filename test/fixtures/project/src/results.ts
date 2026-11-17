@@ -10,5 +10,5 @@ export async function run(): Promise<number> {
 	const kept = check(3);
 	const awaited = await later(3);
 
-	return kept.unwrapOr(0) + awaited.unwrapOr(0);
+	return kept.orTee(console.error).unwrapOr(0) + awaited.orTee(console.error).unwrapOr(0);
 }
