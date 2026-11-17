@@ -196,12 +196,34 @@ export async function createConfig(options = {}) {
 		rules: {
 			'prettier/prettier': 'error',
 
-			// Blank lines Prettier will not add: each step and its check read as a paragraph
+			// Separate declarations and methods; keep related fields and overload signatures together.
 			'@stylistic/padding-line-between-statements': [
 				'error',
 				{ blankLine: 'always', prev: 'if', next: '*' },
 				{ blankLine: 'any', prev: 'if', next: 'if' },
-				{ blankLine: 'always', prev: '*', next: 'return' }
+				{ blankLine: 'always', prev: '*', next: 'return' },
+				{
+					blankLine: 'always',
+					prev: '*',
+					next: ['function', 'class', 'interface', 'type', 'export']
+				},
+				{
+					blankLine: 'always',
+					prev: ['function', 'class', 'interface', 'type', 'export'],
+					next: '*'
+				},
+				{ blankLine: 'any', prev: 'function-overload', next: ['function-overload', 'function'] }
+			],
+
+			'@stylistic/lines-between-class-members': [
+				'error',
+				{
+					enforce: [
+						{ blankLine: 'always', prev: '*', next: 'method' },
+						{ blankLine: 'always', prev: 'method', next: '*' }
+					]
+				},
+				{ exceptAfterOverload: true }
 			],
 
 			// Import hygiene

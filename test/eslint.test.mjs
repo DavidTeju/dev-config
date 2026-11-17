@@ -56,7 +56,7 @@ before(async () => {
 describe('type assertions', () => {
 	it('bans `as T` but allows `as const`', () => {
 		assert.deepEqual(reported('cast.ts'), [
-			{ rule: '@typescript-eslint/consistent-type-assertions', line: 4 }
+			{ rule: '@typescript-eslint/consistent-type-assertions', line: 5 }
 		]);
 	});
 
