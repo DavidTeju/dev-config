@@ -26,14 +26,18 @@ export const exitStatus = (error: unknown): number | undefined => {
 
 /** `value` if it is a string, else `fallback`. */
 export function stringOr(value: unknown): string | undefined;
+
 export function stringOr<F>(value: unknown, fallback: F): string | F;
+
 export function stringOr(value: unknown, fallback?: unknown): unknown {
 	return typeof value === 'string' ? value : fallback;
 }
 
 /** `value` if it is a number, else `fallback`. */
 export function numberOr(value: unknown): number | undefined;
+
 export function numberOr<F>(value: unknown, fallback: F): number | F;
+
 export function numberOr(value: unknown, fallback?: unknown): unknown {
 	return typeof value === 'number' ? value : fallback;
 }

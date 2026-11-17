@@ -59,10 +59,15 @@ const tagged =
 	(message: string): Tagged<K> => ({ kind, message });
 
 export const notFound = tagged('not-found');
+
 export const conflict = tagged('conflict');
+
 export const invalid = tagged('invalid');
+
 export const forbidden = tagged('forbidden');
+
 export const unsupported = tagged('unsupported');
+
 export const tooLarge = tagged('too-large');
 
 export const malformed = (where: string, message: string): Malformed => ({
