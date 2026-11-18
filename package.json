@@ -1,13 +1,13 @@
 {
 	"name": "@davidteju/dev-config",
-	"version": "4.0.0",
-	"description": "Shared ESLint, Prettier, TypeScript, and tooling configs for DavidTeju projects",
+	"version": "5.0.0",
+	"description": "Shared ESLint, Oxfmt, TypeScript, and tooling configs for DavidTeju projects",
 	"type": "module",
 	"exports": {
 		"./eslint": "./eslint/config.mjs",
-		"./prettier/base": "./prettier/base.mjs",
-		"./prettier/svelte": "./prettier/svelte.mjs",
-		"./prettier/nextjs": "./prettier/nextjs.mjs",
+		"./oxfmt/base": "./oxfmt/base.mjs",
+		"./oxfmt/svelte": "./oxfmt/svelte.mjs",
+		"./oxfmt/nextjs": "./oxfmt/nextjs.mjs",
 		"./tsconfig/node": "./tsconfig/node.json",
 		"./tsconfig/node-native": "./tsconfig/node-native.json",
 		"./tsconfig/svelte": "./tsconfig/svelte.json",
@@ -24,7 +24,7 @@
 	},
 	"files": [
 		"eslint",
-		"prettier",
+		"oxfmt",
 		"tsconfig",
 		"vitest",
 		"lint-staged",
@@ -34,7 +34,9 @@
 		"packages/*"
 	],
 	"scripts": {
-		"test": "node --test test/*.test.mjs && npm run verify --workspace @davidteju/result"
+		"test": "node --test test/*.test.mjs && npm run verify --workspace @davidteju/result",
+		"format": "oxfmt --write .",
+		"format:check": "oxfmt --check ."
 	},
 	"dependencies": {
 		"@eslint/js": "^10.0.0",
@@ -47,7 +49,6 @@
 		"eslint-plugin-import-x": "^4.0.0",
 		"eslint-plugin-n": "^17.0.0",
 		"eslint-plugin-no-only-tests": "^3.0.0",
-		"eslint-plugin-prettier": "^5.0.0",
 		"eslint-plugin-regexp": "^3.0.0",
 		"eslint-plugin-sonarjs": "^4.0.0",
 		"eslint-plugin-unused-imports": "^4.0.0",
@@ -57,24 +58,16 @@
 	},
 	"peerDependencies": {
 		"eslint": ">=9.0.0",
-		"prettier": ">=3.0.0",
 		"typescript": ">=5.0.0",
-		"prettier-plugin-svelte": ">=3.0.0",
-		"prettier-plugin-tailwindcss": ">=0.5.0",
 		"eslint-config-next": ">=14.0.0",
 		"eslint-plugin-svelte": ">=3.0.0",
 		"vitest": ">=1.0.0",
 		"@vitest/eslint-plugin": ">=1.0.0",
 		"@vitest/coverage-v8": ">=1.0.0",
-		"neverthrow": ">=8.0.0 <9.0.0"
+		"neverthrow": ">=8.0.0 <9.0.0",
+		"oxfmt": "0.79.0"
 	},
 	"peerDependenciesMeta": {
-		"prettier-plugin-svelte": {
-			"optional": true
-		},
-		"prettier-plugin-tailwindcss": {
-			"optional": true
-		},
 		"eslint-config-next": {
 			"optional": true
 		},
@@ -102,7 +95,6 @@
 	"devDependencies": {
 		"eslint-plugin-svelte": "3.23.1",
 		"neverthrow": "8.2.0",
-		"prettier-plugin-svelte": "4.1.1",
 		"svelte": "5.57.3"
 	}
 }

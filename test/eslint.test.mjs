@@ -271,7 +271,7 @@ describe('clock rules, from the review of their first version', () => {
 		const eslint = new ESLint({
 			cwd: project,
 			overrideConfigFile: true,
-			overrideConfig: [...(await createConfig()), { rules: { 'prettier/prettier': 'off' } }],
+			overrideConfig: await createConfig(),
 			fix: true
 		});
 		const [result] = await eslint.lintFiles(['src/review-polls.test.ts']);

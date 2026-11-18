@@ -1,4 +1,4 @@
 export default {
-	'*.{ts,tsx}': ['eslint --fix', 'prettier --write'],
-	'*.{json,md,css}': ['prettier --write']
+	'*.{ts,tsx}': ['eslint --fix', 'oxfmt --write --no-error-on-unmatched-pattern'],
+	'*.{json,md,css}': ['oxfmt --write --no-error-on-unmatched-pattern']
 };

@@ -1,6 +1,6 @@
 # @davidteju/dev-config
 
-Shared ESLint, Prettier, TypeScript, Vitest, and lint-staged configs for my projects.
+Shared ESLint, Oxfmt, TypeScript, Vitest, and lint-staged configs for my projects.
 
 Install from GitHub:
 
@@ -17,9 +17,9 @@ not with the command above.
 | Export path              | Description                                                                                         |
 | ------------------------ | --------------------------------------------------------------------------------------------------- |
 | `./eslint`               | `createConfig()`: the whole ESLint flat config, for Node, SvelteKit or Next.js                      |
-| `./prettier/base`        | Base Prettier config (tabs, single quotes, no framework plugins)                                    |
-| `./prettier/svelte`      | Prettier config with svelte + tailwind plugins                                                      |
-| `./prettier/nextjs`      | Prettier config with tailwind plugin                                                                |
+| `./oxfmt/base`           | Base Oxfmt config (tabs, single quotes, width 100)                                                  |
+| `./oxfmt/svelte`         | Oxfmt config with Svelte and Tailwind formatting                                                    |
+| `./oxfmt/nextjs`         | Oxfmt config with Tailwind formatting                                                               |
 | `./tsconfig/node`        | TypeScript config for plain Node/backend services (NodeNext, ESM, strict)                           |
 | `./tsconfig/node-native` | `node` preset for TypeScript that Node runs directly with type stripping (no build step)            |
 | `./tsconfig/svelte`      | TypeScript config for SvelteKit                                                                     |
@@ -52,8 +52,8 @@ export default await createConfig();
 ```
 
 ```js
-// .prettierrc.mjs
-export { default } from '@davidteju/dev-config/prettier/base';
+// oxfmt.config.ts
+export { default } from '@davidteju/dev-config/oxfmt/base';
 ```
 
 ```js
@@ -123,8 +123,8 @@ export default [
 
 **All source files:**
 
-- Prettier as an ESLint rule (`prettier/prettier: error`)
-- **Blank lines Prettier will not add** (`@stylistic/padding-line-between-statements`, autofixable): one after each `if` (except between consecutive `if`s), one before each `return`, and separation around function, class, interface, type, and export declarations. `@stylistic/lines-between-class-members` separates constructors and methods from adjacent members. Related fields and class-method overload signatures stay together. The Svelte preset applies the same statement options inside module and instance scripts through `@davidteju/svelte-script-padding`
+- Formatting runs separately through Oxfmt. `eslint-config-prettier` only disables conflicting layout rules; it does not run Prettier.
+- **Blank lines the formatter will not add** (`@stylistic/padding-line-between-statements`, autofixable): one after each `if` (except between consecutive `if`s), one before each `return`, and separation around function, class, interface, type, and export declarations. `@stylistic/lines-between-class-members` separates constructors and methods from adjacent members. Related fields and class-method overload signatures stay together. The Svelte preset applies the same statement options inside module and instance scripts through `@davidteju/svelte-script-padding`
 - TypeScript strictness: no `any`, consistent type imports, no non-null assertions
 - **No type casts** (`consistent-type-assertions: never`; `as const` is allowed). Narrow with a real check instead: `typeof`, `instanceof`, a type guard, or a zod schema for data from outside.
 - **No `throw`** (`@davidteju/no-throw`). Return a [neverthrow](https://github.com/supermacro/neverthrow) `Result` for a failure the caller can act on; call `panic()` for a bug.
@@ -159,17 +159,37 @@ Each message names the fix: fake timers (`vi.useFakeTimers()`, then `await vi.ad
 
 Run `npm test` to check the rules against the fixtures in `test/fixtures/project`.
 
-## Prettier
+## Oxfmt
+
+Install `oxfmt@0.79.0` and select a shared preset in `oxfmt.config.ts`:
 
 ```js
-// prettier.config.mjs (Next.js)
-export { default } from '@davidteju/dev-config/prettier/nextjs';
-
-// prettier.config.mjs (SvelteKit)
-export { default } from '@davidteju/dev-config/prettier/svelte';
+// Plain Node: use /base. SvelteKit: /svelte. Next.js: /nextjs.
+export { default } from '@davidteju/dev-config/oxfmt/svelte';
 ```
 
-Both configs use tabs, single quotes, 100-char print width, and `prettier-plugin-tailwindcss`. The Svelte config additionally includes `prettier-plugin-svelte` and sets `trailingComma: 'none'`.
+All presets use tabs, single quotes and a 100-character print width. Import and
+package.json sorting are disabled. Svelte and Next.js enable Tailwind class sorting;
+Svelte also enables component formatting and uses no trailing commas. Svelte formatting
+requires the consuming project's `svelte` package (including `svelte/compiler`).
+
+Use `oxfmt --check .` in lint/CI and `oxfmt --write .` to format. Keep ESLint as a
+separate lint step: it enforces type-aware rules, Svelte template rules and blank lines.
+The shared lint-staged presets run both where appropriate.
+
+To migrate, replace the Prettier preset import and scripts, remove `prettier`,
+`prettier-plugin-svelte` and `prettier-plugin-tailwindcss`, and move `.prettierignore`
+entries into `ignorePatterns` in the new config. Delete the old formatter config and
+ignore file. Oxfmt respects `.gitignore` and skips generated lockfiles; they are not
+part of the formatting check. Run `oxfmt --write .` once and review the formatting diff.
+
+Compose project-specific exclusions without copying shared formatting defaults:
+
+```js
+import base from '@davidteju/dev-config/oxfmt/base';
+
+export default { ...base, ignorePatterns: ['generated'] };
+```
 
 ## TypeScript
 
@@ -226,19 +246,17 @@ export { default } from '@davidteju/dev-config/lint-staged/svelte';
 
 ## Peer dependencies
 
-Required: `eslint`, `prettier`, `typescript`
+Required: `eslint`, `oxfmt@0.79.0`, `typescript`
 
 Optional (install only what your framework needs):
 
-| Peer                          | Used by                                                     |
-| ----------------------------- | ----------------------------------------------------------- |
-| `eslint-config-next`          | `createConfig({ framework: 'nextjs' })`                     |
-| `prettier-plugin-svelte`      | `prettier/svelte`                                           |
-| `prettier-plugin-tailwindcss` | `prettier/svelte`, `prettier/nextjs`                        |
-| `vitest`                      | `vitest/nextjs`                                             |
-| `@vitest/eslint-plugin`       | Vitest rules in `createConfig()`                            |
-| `eslint-plugin-svelte`        | `createConfig({ framework: 'svelte' })`                     |
-| `neverthrow`                  | `@davidteju/must-use-result` (projects that return Results) |
+| Peer                    | Used by                                                     |
+| ----------------------- | ----------------------------------------------------------- |
+| `eslint-config-next`    | `createConfig({ framework: 'nextjs' })`                     |
+| `vitest`                | `vitest/nextjs`                                             |
+| `@vitest/eslint-plugin` | Vitest rules in `createConfig()`                            |
+| `eslint-plugin-svelte`  | `createConfig({ framework: 'svelte' })`                     |
+| `neverthrow`            | `@davidteju/must-use-result` (projects that return Results) |
 
 ## License
 

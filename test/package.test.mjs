@@ -23,6 +23,10 @@ describe('what each package ships', () => {
 	it('dev-config ships its configs and none of the result package or its own tests', async () => {
 		const files = await packed();
 		assert.ok(files.includes('eslint/config.mjs'));
+		assert.ok(files.includes('oxfmt/base.mjs'));
+		assert.ok(files.includes('oxfmt/svelte.mjs'));
+		assert.ok(files.includes('oxfmt/nextjs.mjs'));
+		assert.ok(!files.some((file) => file.startsWith('prettier/')));
 		assert.ok(files.includes('tsconfig/strict.json'));
 		assert.deepEqual(
 			files.filter((file) => /^(packages|test)\/|\.tgz$/.test(file)),
