@@ -70,3 +70,26 @@ test('a commit containing only a lockfile skips formatting successfully', async 
 	execFileSync(`node_modules/.bin/${binary}`, [...args, 'package-lock.json'], { stdio: 'pipe' });
 	assert.equal(readFileSync('package-lock.json', 'utf8'), before);
 });
+
+test('presets have types when imported by a strict TypeScript formatter config', async () => {
+	const ts = (await import('typescript')).default;
+	for (const [module, moduleResolution] of [
+		[ts.ModuleKind.NodeNext, ts.ModuleResolutionKind.NodeNext],
+		[ts.ModuleKind.ESNext, ts.ModuleResolutionKind.Bundler]
+	]) {
+		const program = ts.createProgram(['test/fixtures/formatter/config.mts'], {
+			strict: true,
+			noEmit: true,
+			skipLibCheck: true,
+			types: [],
+			module,
+			moduleResolution
+		});
+		assert.deepEqual(
+			ts
+				.getPreEmitDiagnostics(program)
+				.map((error) => ts.flattenDiagnosticMessageText(error.messageText, '\n')),
+			[]
+		);
+	}
+});

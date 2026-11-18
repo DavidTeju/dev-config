@@ -24,6 +24,7 @@ describe('what each package ships', () => {
 		const files = await packed();
 		assert.ok(files.includes('eslint/config.mjs'));
 		assert.ok(files.includes('oxfmt/base.mjs'));
+		assert.ok(files.includes('oxfmt/config.d.mts'));
 		assert.ok(files.includes('oxfmt/svelte.mjs'));
 		assert.ok(files.includes('oxfmt/nextjs.mjs'));
 		assert.ok(!files.some((file) => file.startsWith('prettier/')));
