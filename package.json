@@ -100,6 +100,9 @@
 	},
 	"license": "MIT",
 	"devDependencies": {
-		"neverthrow": "8.2.0"
+		"eslint-plugin-svelte": "3.23.1",
+		"neverthrow": "8.2.0",
+		"prettier-plugin-svelte": "4.1.1",
+		"svelte": "5.57.3"
 	}
 }
