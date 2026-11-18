@@ -15,8 +15,27 @@ import { mustUseResult } from './rules/must-use-result.mjs';
 import { noElapsedTimeAssertion } from './rules/no-elapsed-time-assertion.mjs';
 import { noExactTimerCount } from './rules/no-exact-timer-count.mjs';
 import { noFixedSleep } from './rules/no-fixed-sleep.mjs';
+import { svelteScriptPadding } from './rules/svelte-script-padding.mjs';
 import { noThrow } from './rules/no-throw.mjs';
 import { pollTimeoutFloor } from './rules/poll-timeout-floor.mjs';
+
+const statementPadding = [
+	'error',
+	{ blankLine: 'always', prev: 'if', next: '*' },
+	{ blankLine: 'any', prev: 'if', next: 'if' },
+	{ blankLine: 'always', prev: '*', next: 'return' },
+	{
+		blankLine: 'always',
+		prev: '*',
+		next: ['function', 'class', 'interface', 'type', 'export']
+	},
+	{
+		blankLine: 'always',
+		prev: ['function', 'class', 'interface', 'type', 'export'],
+		next: '*'
+	},
+	{ blankLine: 'any', prev: 'function-overload', next: ['function-overload', 'function'] }
+];
 
 /** Glob patterns that identify test and benchmark files. */
 const testFilePatterns = [
@@ -36,6 +55,7 @@ const panicFilePatterns = ['**/panic.{ts,tsx,js,mjs}'];
 const ownPlugin = {
 	rules: {
 		'must-use-result': mustUseResult,
+		'svelte-script-padding': svelteScriptPadding,
 		'no-throw': noThrow,
 		'no-fixed-sleep': noFixedSleep,
 		'poll-timeout-floor': pollTimeoutFloor,
@@ -197,23 +217,7 @@ export async function createConfig(options = {}) {
 			'prettier/prettier': 'error',
 
 			// Separate declarations and methods; keep related fields and overload signatures together.
-			'@stylistic/padding-line-between-statements': [
-				'error',
-				{ blankLine: 'always', prev: 'if', next: '*' },
-				{ blankLine: 'any', prev: 'if', next: 'if' },
-				{ blankLine: 'always', prev: '*', next: 'return' },
-				{
-					blankLine: 'always',
-					prev: '*',
-					next: ['function', 'class', 'interface', 'type', 'export']
-				},
-				{
-					blankLine: 'always',
-					prev: ['function', 'class', 'interface', 'type', 'export'],
-					next: '*'
-				},
-				{ blankLine: 'any', prev: 'function-overload', next: ['function-overload', 'function'] }
-			],
+			'@stylistic/padding-line-between-statements': statementPadding,
 
 			'@stylistic/lines-between-class-members': [
 				'error',
@@ -418,6 +422,13 @@ export async function createConfig(options = {}) {
 	if (framework === 'nextjs') {
 		config.push({ ignores: ['.next/**', 'out/**', 'build/**', 'next-env.d.ts'] });
 	} else if (framework === 'svelte') {
+		config.push({
+			files: ['**/*.svelte'],
+			rules: {
+				'@stylistic/padding-line-between-statements': 'off',
+				'@davidteju/svelte-script-padding': statementPadding
+			}
+		});
 		config.push({ ignores: ['.svelte-kit/**', 'build/**', 'node_modules/**'] });
 	}
 
