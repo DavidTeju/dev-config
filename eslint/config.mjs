@@ -2,7 +2,6 @@ import js from '@eslint/js';
 import stylistic from '@stylistic/eslint-plugin';
 import ts from 'typescript-eslint';
 import prettierConfig from 'eslint-config-prettier';
-import prettierPlugin from 'eslint-plugin-prettier';
 import regexp from 'eslint-plugin-regexp';
 import sonarjs from 'eslint-plugin-sonarjs';
 import importX from 'eslint-plugin-import-x';
@@ -205,7 +204,6 @@ export async function createConfig(options = {}) {
 	// === 4. Strict rules (always) ===
 	config.push({
 		plugins: {
-			prettier: prettierPlugin,
 			'unused-imports': unusedImports,
 			'@davidteju': ownPlugin,
 			'@stylistic': stylistic
@@ -214,8 +212,6 @@ export async function createConfig(options = {}) {
 			'import-x/resolver-next': [createTypeScriptImportResolver()]
 		},
 		rules: {
-			'prettier/prettier': 'error',
-
 			// Separate declarations and methods; keep related fields and overload signatures together.
 			'@stylistic/padding-line-between-statements': statementPadding,
 

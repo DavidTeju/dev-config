@@ -27,7 +27,7 @@ const selected = $derived(state?.selected);
 	const options = {
 		cwd: path.resolve(import.meta.dirname, '..'),
 		overrideConfigFile: true,
-		overrideConfig: [...config, { rules: { 'prettier/prettier': 'off' } }]
+		overrideConfig: config
 	};
 	const lint = new ESLint(options);
 	const filePath = 'test/fixtures/Settings.svelte';
