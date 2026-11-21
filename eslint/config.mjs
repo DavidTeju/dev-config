@@ -18,6 +18,7 @@ import { noFixedSleep } from './rules/no-fixed-sleep.mjs';
 import { svelteScriptPadding } from './rules/svelte-script-padding.mjs';
 import { noThrow } from './rules/no-throw.mjs';
 import { pollTimeoutFloor } from './rules/poll-timeout-floor.mjs';
+import { loadVitestPlugin } from './vitest-plugin.mjs';
 
 const statementPadding = [
 	'error',
@@ -374,13 +375,13 @@ export async function createConfig(options = {}) {
 		});
 	}
 
-	// Vitest test overrides (dynamic — optional peer dep)
-	try {
-		const vitestPlugin = await import('@vitest/eslint-plugin');
+	// Vitest test overrides: skipped only in a project without Vitest
+	const vitestPlugin = await loadVitestPlugin();
+	if (vitestPlugin) {
 		config.push({
 			files: testFilePatterns,
 			plugins: {
-				vitest: vitestPlugin.default
+				vitest: vitestPlugin
 			},
 			rules: {
 				'vitest/expect-expect': 'error',
@@ -389,8 +390,6 @@ export async function createConfig(options = {}) {
 				'vitest/no-disabled-tests': 'error'
 			}
 		});
-	} catch {
-		// @vitest/eslint-plugin not installed — skip vitest rules
 	}
 
 	// Tests wait on conditions, not the wall clock: a fixed wait is too short under load and

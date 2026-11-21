@@ -150,10 +150,12 @@ export default [
 
 Each message names the fix: fake timers (`vi.useFakeTimers()`, then `await vi.advanceTimersByTimeAsync(ms)`) for time the code measures, or waiting on the condition the test asserts.
 
-**Vitest rules** for test files, when `@vitest/eslint-plugin` is installed:
+**Vitest rules** for test files in any project with Vitest. `createConfig` fails when `vitest` is installed without `@vitest/eslint-plugin`, or when the plugin will not load, so the rules never drop silently; a project without Vitest skips them.
 
 - `vitest/no-conditional-in-test`: bans `if` statements inside test bodies
 - `vitest/no-conditional-expect`: bans conditional `expect()` calls
+- `vitest/expect-expect`: a test asserts something
+- `vitest/no-disabled-tests`: bans skipped tests (`.skip`, `xit`)
 
 **Scripts** get relaxed rules in `scripts/**/*.ts` (CLI tooling, build scripts), including allowing `throw`.
 
